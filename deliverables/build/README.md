@@ -17,3 +17,11 @@ number, table and chart for the 36-item record, anonymises the store names,
 corrects the exclusion paragraph, drafts Section 8 and (with
 `--strip-highlight`) removes the yellow review highlighting. `stats2.json`
 holds the statistics it reads.
+
+## Presentation
+
+```bash
+npm install pptxgenjs react-icons react react-dom sharp
+node build_deck.js ../Food_First_Price_Showdown_Deck.pptx        # 14 slides, script in speaker notes, writes deck_script.json
+node build_script_doc.js ../Food_First_Price_Showdown_Script.docx # editable presenter script with run-of-show timings
+```
