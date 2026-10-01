@@ -3,9 +3,9 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch
-from data import computed, STORE_A, STORE_B, CATEGORIES
+from data2 import computed, STORE_A, STORE_B, CATEGORIES
 
-OUT = "/tmp/claude-0/-home-user-Claude-Code/44dd45fb-e13e-5e85-ae62-01673943b147/scratchpad/build/charts"
+OUT = "/tmp/claude-0/-home-user-Claude-Code/44dd45fb-e13e-5e85-ae62-01673943b147/scratchpad/build/charts2"
 import os; os.makedirs(OUT, exist_ok=True)
 
 BLUE, ORANGE, AQUA, RED = "#2a78d6", "#eb6834", "#1baf7a", "#e34948"
@@ -14,7 +14,7 @@ plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 9, "axes.edgecol
                      "xtick.color": INK2, "ytick.color": INK2, "axes.spines.top": False, "axes.spines.right": False})
 
 rows = computed()
-val = [d for d in rows if d["include"] == "Y"]
+val = rows
 
 def clean(ax, zero=True):
     ax.grid(axis="x" if ax.get_xlim()[0] < 0 else "y", color=GRID, linewidth=0.8)
@@ -57,7 +57,7 @@ bars = ax.barh(names[::-1], vals[::-1], color=cols[::-1], height=0.55)
 for b, v in zip(bars, vals[::-1]):
     ax.text(v + 4, b.get_y() + b.get_height()/2, f"BBD {v:,.2f}", va="center", fontsize=9, color=INK)
 ax.set_xlim(0, max(vals) * 1.25)
-ax.set_xlabel("Sum of standardised prices, 38 included items (BBD)")
+ax.set_xlabel("Sum of standardised prices, 36 included items (BBD)")
 ax.grid(axis="x", color=GRID, linewidth=0.8); ax.set_axisbelow(True); ax.tick_params(length=0)
 ax.set_title("Indicative matched-basket total", fontsize=10, color=INK, loc="left")
 fig.tight_layout()
@@ -89,7 +89,7 @@ ax.axvline(0, color=INK2, linewidth=0.8)
 ax.set_xlabel("Food First price relative to supermarket (%)  |  negative = Food First cheaper")
 ax.grid(axis="x", color=GRID, linewidth=0.8); ax.set_axisbelow(True); ax.tick_params(length=0)
 ax.legend(loc="upper right", frameon=False, fontsize=8)
-ax.set_title("Item-level price difference, 38 like-for-like items", fontsize=10, color=INK, loc="left")
+ax.set_title("Item-level price difference, 36 like-for-like items", fontsize=10, color=INK, loc="left")
 for i, d in enumerate(srt):
     if d["ff_a"] > 0.6:
         v = d["ff_a"]*100
