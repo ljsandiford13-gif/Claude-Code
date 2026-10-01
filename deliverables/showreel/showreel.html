@@ -1,0 +1,1197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080">
+<title>Sandiford Digital Showreel</title>
+<!--
+  Sandiford Digital, 15 second showreel. 1080 x 1920, 30fps.
+
+  Every frame is a pure function of time: seek(t) sets the whole stage for
+  second t, so render.mjs can step through it frame by frame. Open this file
+  in a browser with ?play to watch it in real time, or ?t=7.5 to hold a frame.
+
+  Timing lives in the T table below. Copy lives in the markup.
+-->
+<style>
+@font-face{font-family:'Fraunces';font-style:normal;font-weight:100 900;src:url(fonts/Fraunces-normal-latin.woff2) format('woff2');}
+@font-face{font-family:'Fraunces';font-style:italic;font-weight:100 900;src:url(fonts/Fraunces-italic-latin.woff2) format('woff2');}
+@font-face{font-family:'Manrope';font-style:normal;font-weight:200 800;src:url(fonts/Manrope-normal-latin.woff2) format('woff2');}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:100 800;src:url(fonts/JetBrainsMono-normal-latin.woff2) format('woff2');}
+
+:root{
+  --deep:#04202E; --shallow:#0B3B4F; --foam:#EAF7FA; --aqua:#2DD4BF; --teal:#0F766E; --coral:#FF7A5C;
+  --ink:#062A38;                       /* ink on foam */
+  --deep-2:#072B3D; --shallow-2:#0F4A62; --foam-2:#DCEFF3;
+  --foam-66:rgba(234,247,250,.66); --foam-40:rgba(234,247,250,.40); --foam-12:rgba(234,247,250,.12);
+  --ink-72:rgba(6,42,56,.72); --deep-72:rgba(4,32,46,.72);
+  --hair-deep:rgba(45,212,191,.22);    /* hairline on deep and shallow */
+  --hair-foam:rgba(15,118,110,.25);    /* hairline on foam */
+  --hair-aqua:rgba(4,32,46,.22);       /* hairline on aqua */
+}
+html,body{margin:0;padding:0;background:var(--deep);}
+#stage{position:relative;width:1080px;height:1920px;overflow:hidden;background:var(--deep);}
+#water{position:absolute;left:0;top:0;width:1080px;height:1920px;}
+.region{position:absolute;left:0;top:0;width:1080px;height:1920px;}
+.scene{position:absolute;left:0;top:0;width:1080px;height:1920px;}
+.abs{position:absolute;}
+
+/* Type */
+.serif{font-family:'Fraunces',serif;font-weight:340;letter-spacing:-0.02em;font-optical-sizing:auto;}
+.it{font-style:italic;}
+.mono{font-family:'JetBrains Mono',monospace;font-weight:500;text-transform:uppercase;letter-spacing:.24em;}
+.sans{font-family:'Manrope',sans-serif;}
+.hl{line-height:.92;white-space:nowrap;}
+/* A line is the mask the words rise from behind. Padding gives italics and descenders room. */
+.line{display:block;overflow:hidden;padding:.06em .14em .2em .04em;margin:-.06em -.14em -.2em -.04em;}
+.w{display:inline-block;will-change:transform;}
+
+/* Chrome */
+.chrome{position:absolute;left:0;top:0;width:1080px;height:1920px;pointer-events:none;}
+.c-rule{position:absolute;left:90px;top:269px;width:72px;height:3px;transform-origin:0 50%;}
+.c-mask{position:absolute;overflow:hidden;height:30px;padding:0 4px;margin:0 -4px;}
+.c-mask>span{display:block;font-family:'JetBrains Mono',monospace;font-weight:500;font-size:22px;line-height:30px;letter-spacing:.24em;text-transform:uppercase;white-space:nowrap;}
+.c-eyebrow{left:186px;top:256px;}
+.c-counter{right:86px;top:256px;}
+.c-hair{position:absolute;left:90px;top:1500px;width:900px;height:2px;transform-origin:0 50%;}
+.c-handle{left:90px;top:1528px;}
+.c-site{right:86px;top:1528px;}
+.c-mask>span.lc{text-transform:none;letter-spacing:.06em;}
+.f-foam .c-rule{background:var(--teal);} .f-foam .c-mask>span{color:var(--ink-72);} .f-foam .c-hair{background:var(--hair-foam);}
+.f-deep .c-rule{background:var(--aqua);} .f-deep .c-mask>span{color:var(--foam-66);} .f-deep .c-hair{background:var(--hair-deep);}
+.f-aqua .c-rule{background:var(--deep);} .f-aqua .c-mask>span{color:var(--deep-72);} .f-aqua .c-hair{background:var(--hair-aqua);}
+.c-mask.roll>span{position:absolute;left:4px;top:0;}
+.c-eyebrow.roll{width:560px;}
+.c-counter.roll{width:160px;}
+.c-counter.roll>span{left:auto;right:4px;}
+
+/* Cursor */
+.cursor{position:absolute;left:0;top:0;width:46px;height:56px;transform-origin:4px 4px;opacity:0;}
+
+/* ---------- Scene 1 (foam) ---------- */
+#s1-head{left:90px;top:836px;font-size:172px;color:var(--ink);}
+.restyle{position:relative;display:inline-block;}
+.r-roman{display:inline-block;}
+.r-italic{position:absolute;left:0;top:0;font-style:italic;color:var(--teal);white-space:nowrap;}
+#s1-caret{position:absolute;width:4px;background:var(--teal);opacity:0;}
+#s1-sel{position:absolute;opacity:0;}
+#s1-sel .box{position:absolute;inset:0;border:2px solid var(--teal);}
+#s1-sel .hd{position:absolute;width:14px;height:14px;background:var(--foam);border:2px solid var(--teal);box-sizing:border-box;}
+#s1-chip{position:absolute;left:-2px;bottom:-50px;background:var(--teal);color:var(--foam);font-family:'JetBrains Mono',monospace;font-weight:500;font-size:20px;letter-spacing:.2em;padding:5px 12px 5px 14px;border-radius:4px;white-space:nowrap;}
+
+/* ---------- Scene 2 + 3 (deep) ---------- */
+.deep-ink{color:var(--foam);}
+.accent-aqua{color:var(--aqua);}
+#s2-head,#s3-head{left:90px;top:340px;font-size:124px;}
+#dev{position:absolute;}
+#dev-outline{position:absolute;left:0;top:0;overflow:visible;}
+#dev-bar{position:absolute;left:0;top:0;height:46px;}
+#dev-bar .dot{position:absolute;top:17px;width:11px;height:11px;border-radius:50%;border:1.5px solid var(--hair-deep);box-sizing:border-box;}
+#dev-bar .url{position:absolute;top:11px;height:24px;border-radius:12px;border:1.5px solid var(--hair-deep);box-sizing:border-box;}
+#dev-bar .div{position:absolute;left:0;top:45px;height:1.5px;background:var(--hair-deep);transform-origin:0 50%;}
+#dev-speaker{position:absolute;height:5px;border-radius:3px;background:var(--hair-deep);opacity:0;}
+#dev-screen{position:absolute;overflow:hidden;}
+.layer{position:absolute;left:0;top:0;}
+
+/* Desktop garage site */
+#desk{width:900px;height:594px;}
+#desk-bg{position:absolute;left:0;top:0;width:900px;height:594px;background:var(--deep-2);}
+#grid{width:900px;height:594px;}
+#grid .col{position:absolute;top:0;width:50px;height:594px;background:rgba(45,212,191,.07);transform-origin:50% 0;}
+#wire{width:900px;height:594px;}
+#wire .bar{position:absolute;height:12px;border-radius:6px;background:var(--foam-12);transform-origin:0 50%;}
+#wire svg{position:absolute;left:0;top:0;overflow:visible;}
+#wire rect,#wire line{fill:none;stroke:rgba(45,212,191,.45);stroke-width:1.5;}
+#wimg{position:absolute;}
+#guides .g{position:absolute;background:var(--aqua);opacity:0;}
+#chip2{position:absolute;background:var(--aqua);color:var(--deep);font-family:'JetBrains Mono',monospace;font-weight:600;font-size:13px;letter-spacing:.12em;padding:4px 9px;border-radius:4px;opacity:0;white-space:nowrap;}
+.d-el{position:absolute;}
+.gar-mark{width:18px;height:18px;background:var(--aqua);border-radius:3px;}
+.gar-word{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:13px;letter-spacing:.22em;color:var(--foam);text-transform:uppercase;}
+.gar-nav{font-family:'Manrope',sans-serif;font-weight:500;font-size:14px;color:var(--foam-66);}
+.gar-eyebrow{font-family:'JetBrains Mono',monospace;font-weight:500;font-size:11px;letter-spacing:.2em;color:var(--aqua);white-space:nowrap;text-transform:uppercase;}
+.gar-h{font-family:'Manrope',sans-serif;font-weight:800;text-transform:uppercase;color:var(--foam);letter-spacing:-.01em;line-height:1;white-space:nowrap;}
+.gar-body{font-family:'Manrope',sans-serif;font-weight:400;color:var(--foam-66);white-space:nowrap;}
+.btn{position:absolute;display:flex;align-items:center;justify-content:center;font-family:'Manrope',sans-serif;font-weight:700;border-radius:999px;box-sizing:border-box;white-space:nowrap;}
+.btn-aqua{background:var(--aqua);color:var(--deep);}
+.btn-line{border:1.5px solid rgba(234,247,250,.35);color:var(--foam);}
+.wheel{position:absolute;background:var(--shallow);border-radius:14px;overflow:hidden;}
+.wheel svg{position:absolute;left:0;top:0;}
+.wheel circle,.wheel line,.wheel path{fill:none;stroke:var(--aqua);}
+.wheel .cap{position:absolute;left:14px;bottom:12px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;color:var(--foam-66);text-transform:uppercase;}
+.card{position:absolute;background:var(--shallow);border-radius:12px;}
+.card .n{position:absolute;left:16px;top:16px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;color:var(--aqua);}
+.card .t{position:absolute;left:16px;top:38px;font-family:'Manrope',sans-serif;font-weight:700;font-size:17px;color:var(--foam);}
+.card .s{position:absolute;left:16px;top:64px;font-family:'Manrope',sans-serif;font-size:13px;color:var(--foam-66);}
+#skel .sk{position:absolute;background:rgba(234,247,250,.09);border-radius:8px;}
+
+/* Mobile sites (screen 400 x 804) */
+.mob{width:400px;height:804px;overflow:hidden;}
+.mob .in{position:absolute;left:0;top:0;width:400px;}
+.burger{position:absolute;width:30px;height:12px;}
+.burger i{position:absolute;left:0;width:30px;height:2px;}
+.burger i:first-child{top:0;} .burger i:last-child{top:10px;}
+#m-gar{background:var(--deep-2);}
+#m-gar .burger i{background:var(--foam);}
+#m-bar{background:var(--shallow);}
+#m-bar .burger i{background:var(--foam);}
+.bar-h{font-family:'Fraunces',serif;font-weight:340;letter-spacing:-.02em;color:var(--foam);line-height:.94;white-space:nowrap;}
+.slot{position:absolute;width:100px;height:40px;border-radius:20px;border:1.5px solid var(--hair-deep);box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.06em;color:var(--foam);}
+.slot.off{color:rgba(234,247,250,.28);text-decoration:line-through;}
+.slot-sel{position:absolute;width:100px;height:40px;border-radius:20px;background:var(--aqua);}
+.svc{position:absolute;left:22px;width:356px;height:58px;border-top:1.5px solid var(--hair-deep);}
+.svc .a{position:absolute;left:0;top:18px;font-family:'Manrope',sans-serif;font-weight:600;font-size:17px;color:var(--foam);}
+.svc .b{position:absolute;right:0;top:21px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;color:var(--foam-66);text-transform:uppercase;}
+#m-roti{background:var(--foam);}
+#m-roti .burger i{background:var(--ink);}
+.roti-h{font-family:'Fraunces',serif;font-weight:340;letter-spacing:-.02em;color:var(--ink);line-height:.92;white-space:nowrap;}
+.menu-row{position:absolute;left:22px;width:356px;height:62px;border-top:1.5px solid var(--hair-foam);}
+.menu-row .a{position:absolute;left:0;top:19px;font-family:'Manrope',sans-serif;font-weight:700;font-size:18px;color:var(--ink);}
+.menu-row .b{position:absolute;right:0;top:15px;height:30px;padding:0 14px;border-radius:15px;border:1.5px solid rgba(6,42,56,.3);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;line-height:28px;color:var(--ink);box-sizing:border-box;text-transform:uppercase;}
+.btn-coral{background:var(--coral);color:var(--deep);}
+.btn-ink{background:var(--ink);color:var(--foam);}
+
+/* Scene 3 extras */
+#s3-num{left:84px;top:716px;font-family:'JetBrains Mono',monospace;font-weight:300;font-size:250px;line-height:1;letter-spacing:-.04em;color:var(--aqua);}
+#s3-num .line,#s3-lab .line{padding:.04em .1em .08em .02em;margin:-.04em -.1em -.08em -.02em;}
+#s3-lab{left:92px;top:986px;width:420px;font-size:24px;color:var(--foam);}
+.stack{position:relative;display:block;}
+.stack>.w{position:absolute;left:0;top:0;white-space:nowrap;}
+.stack>.w:first-child{position:relative;}
+
+/* ---------- Scene 4 (aqua) ---------- */
+#s4-head{left:90px;top:340px;font-size:112px;color:var(--deep);}
+#s4-chart{position:absolute;left:0;top:0;width:1080px;height:1920px;overflow:visible;}
+.s4-grid{position:absolute;left:90px;width:900px;height:2px;background:var(--hair-aqua);transform-origin:0 50%;}
+.s4-label{position:absolute;font-family:'JetBrains Mono',monospace;font-weight:500;font-size:22px;letter-spacing:.24em;color:var(--deep-72);white-space:nowrap;text-transform:uppercase;}
+#s4-cap{left:90px;top:1296px;font-family:'Manrope',sans-serif;font-weight:500;font-size:38px;line-height:1.3;color:var(--deep);white-space:nowrap;}
+
+/* ---------- Scene 5 (deep, sign off) ---------- */
+#s5-logo{position:absolute;left:0;width:1080px;display:flex;justify-content:center;opacity:0;}
+#s5-logo img{height:170px;width:auto;display:block;}
+#s5-word{position:absolute;left:0;width:1080px;text-align:center;font-size:220px;line-height:.9;color:var(--foam);}
+#s5-word .line{padding:.04em .14em .2em .14em;margin:-.04em -.14em -.2em -.14em;}
+#s5-word .ch{display:inline-block;will-change:transform;}
+#s5-rule{position:absolute;left:500px;width:80px;height:3px;background:var(--aqua);transform-origin:0 50%;}
+#s5-cta{position:absolute;left:0;width:1080px;display:flex;justify-content:center;}
+#s5-cta .btn{position:relative;height:100px;padding:0 54px;font-weight:600;font-size:36px;}
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="water" width="1080" height="1920"></canvas>
+
+  <!-- ===================== 01 · Surface (foam) ===================== -->
+  <div class="region" id="r1">
+    <div class="scene" id="s1">
+      <div class="abs serif hl" id="s1-head">
+        <span class="line"><span class="w">Your</span></span>
+        <span class="line"><span class="w">customers</span> <span class="w">are</span></span>
+        <span class="line"><span class="w"><span class="restyle" id="restyle"><span class="r-roman" id="r-roman">Googling you.</span><span class="r-italic" id="r-italic">Googling you.</span></span></span></span>
+      </div>
+      <div id="s1-caret"></div>
+      <div id="s1-sel">
+        <div class="box"></div>
+        <div class="hd" data-h="0,0"></div><div class="hd" data-h=".5,0"></div><div class="hd" data-h="1,0"></div>
+        <div class="hd" data-h="0,.5"></div><div class="hd" data-h="1,.5"></div>
+        <div class="hd" data-h="0,1"></div><div class="hd" data-h=".5,1"></div><div class="hd" data-h="1,1"></div>
+        <div id="s1-chip">ITALIC</div>
+      </div>
+    </div>
+    <div class="chrome f-foam" id="c1">
+      <div class="c-rule"></div>
+      <div class="c-mask c-eyebrow"><span>Web design, Bridgetown</span></div>
+      <div class="c-mask c-counter"><span>01 / 05</span></div>
+      <div class="c-hair"></div>
+      <div class="c-mask c-handle"><span class="lc">@sandiford.digital</span></div>
+      <div class="c-mask c-site"><span class="lc">sandiford-digital.com</span></div>
+    </div>
+    <svg class="cursor" id="cur1" viewBox="0 0 46 56"><path d="M4 4 L4 44 L14.5 34.5 L21.5 50 L29 46.6 L22 31.4 L36 31.4 Z" fill="#062A38" stroke="#EAF7FA" stroke-width="2.5" stroke-linejoin="round"/></svg>
+  </div>
+
+  <!-- ===================== 02 + 03 · Design, then range (deep) ===================== -->
+  <div class="region" id="r23">
+    <div class="scene" id="s23">
+      <div class="abs serif hl deep-ink" id="s2-head">
+        <span class="line"><span class="w">Designed</span> <span class="w">and</span> <span class="w">built</span></span>
+        <span class="line it accent-aqua"><span class="w">on</span> <span class="w">the</span> <span class="w">island.</span></span>
+      </div>
+      <div class="abs serif hl deep-ink" id="s3-head">
+        <span class="line"><span class="w">Garages.</span> <span class="w">Barbers.</span></span>
+        <span class="line it accent-aqua"><span class="w">Roti</span> <span class="w">shops.</span></span>
+      </div>
+      <div class="abs" id="s3-num"><span class="line"><span class="stack"><span class="w">01</span><span class="w">02</span><span class="w">03</span></span></span></div>
+      <div class="abs mono" id="s3-lab"><span class="line"><span class="stack"><span class="w">Garage</span><span class="w">Barber</span><span class="w">Roti shop</span></span></span></div>
+
+      <div id="dev">
+        <svg id="dev-outline"><rect id="dev-rect" fill="none" stroke="rgba(45,212,191,.22)" stroke-width="2"/></svg>
+        <div id="dev-bar">
+          <div class="dot" style="left:20px"></div><div class="dot" style="left:39px"></div><div class="dot" style="left:58px"></div>
+          <div class="url"></div>
+          <div class="div"></div>
+        </div>
+        <div id="dev-speaker"></div>
+        <div id="dev-screen">
+          <!-- Desktop: designed garage site -->
+          <div class="layer" id="desk-bg"></div>
+          <div class="layer" id="desk">
+            <div class="d-el gar-mark" style="left:40px;top:22px"></div>
+            <div class="d-el gar-word" style="left:68px;top:22px">Garage</div>
+            <div class="d-el gar-nav" style="left:548px;top:22px">Services</div>
+            <div class="d-el gar-nav" style="left:634px;top:22px">Bookings</div>
+            <div class="d-el gar-nav" style="left:724px;top:22px">Contact</div>
+            <div class="btn btn-aqua d-el" style="left:800px;top:15px;width:60px;height:32px;font-size:13px">Book</div>
+            <div class="d-el gar-eyebrow" style="left:40px;top:96px">Servicing / Brakes / Bodywork</div>
+            <div class="d-el gar-h" style="left:40px;top:122px;font-size:54px">Booked in.<br>Back on<br>the road.</div>
+            <div class="d-el gar-body" style="left:40px;top:300px;font-size:16px">Servicing, brakes and bodywork.</div>
+            <div class="btn btn-aqua d-el" style="left:40px;top:340px;width:170px;height:46px;font-size:15px">Book a service</div>
+            <div class="btn btn-line d-el" style="left:222px;top:340px;width:140px;height:46px;font-size:15px">WhatsApp us</div>
+            <div class="wheel d-el" style="left:530px;top:84px;width:330px;height:310px">
+              <svg width="330" height="310" viewBox="0 0 330 310">
+                <circle cx="165" cy="150" r="118" stroke-width="1.5" opacity=".35"/>
+                <circle cx="165" cy="150" r="96" stroke-width="10" opacity=".22"/>
+                <circle cx="165" cy="150" r="74" stroke-width="1.5" opacity=".7"/>
+                <circle cx="165" cy="150" r="30" stroke-width="1.5" opacity=".7"/>
+                <circle cx="165" cy="150" r="9" stroke-width="1.5" opacity=".7"/>
+                <g class="spokes" stroke-width="1.5" opacity=".55"></g>
+              </svg>
+              <div class="cap">Bay 02</div>
+            </div>
+            <div class="card d-el" style="left:40px;top:430px;width:260px;height:110px"><div class="n">01</div><div class="t">Servicing</div><div class="s">Oil, filters and checks.</div></div>
+            <div class="card d-el" style="left:320px;top:430px;width:260px;height:110px"><div class="n">02</div><div class="t">Brakes</div><div class="s">Pads, discs and fluid.</div></div>
+            <div class="card d-el" style="left:600px;top:430px;width:260px;height:110px"><div class="n">03</div><div class="t">Bodywork</div><div class="s">Dents, scratches and paint.</div></div>
+          </div>
+          <!-- Desktop: layout grid and wireframe -->
+          <div class="layer" id="grid"></div>
+          <div class="layer" id="wire">
+            <svg width="900" height="594" id="wire-svg"></svg>
+            <div id="wire-bars"></div>
+            <div id="wimg"><svg width="330" height="310" id="wimg-svg"><rect x="0.75" y="0.75" width="328.5" height="308.5" rx="14"/><line x1="14" y1="14" x2="316" y2="296"/><line x1="316" y1="14" x2="14" y2="296"/></svg></div>
+          </div>
+          <div class="layer" id="guides"><div class="g" id="g-v"></div><div class="g" id="g-h"></div></div>
+          <div id="chip2">330 × 310</div>
+          <!-- Morph skeleton -->
+          <div class="layer" id="skel"></div>
+          <!-- Mobile: garage -->
+          <div class="layer mob" id="m-gar"><div class="in">
+            <div class="d-el gar-mark" style="left:22px;top:24px;width:16px;height:16px"></div>
+            <div class="d-el gar-word" style="left:48px;top:23px;font-size:12px">Garage</div>
+            <div class="burger" style="left:348px;top:26px"><i></i><i></i></div>
+            <div class="d-el gar-eyebrow" style="left:22px;top:80px;font-size:10.5px">Servicing / Brakes / Bodywork</div>
+            <div class="d-el gar-h" style="left:22px;top:102px;font-size:48px">Booked in.<br>Back on<br>the road.</div>
+            <div class="d-el gar-body" style="left:22px;top:266px;font-size:15px">Servicing, brakes and bodywork.</div>
+            <div class="btn btn-aqua" style="left:22px;top:312px;width:356px;height:50px;font-size:16px">Book a service</div>
+            <div class="btn btn-line" style="left:22px;top:372px;width:356px;height:50px;font-size:16px">WhatsApp us</div>
+            <div class="wheel" style="left:22px;top:444px;width:356px;height:236px">
+              <svg width="356" height="236" viewBox="0 0 356 236">
+                <circle cx="178" cy="118" r="98" stroke-width="1.5" opacity=".35"/>
+                <circle cx="178" cy="118" r="80" stroke-width="9" opacity=".22"/>
+                <circle cx="178" cy="118" r="61" stroke-width="1.5" opacity=".7"/>
+                <circle cx="178" cy="118" r="25" stroke-width="1.5" opacity=".7"/>
+                <circle cx="178" cy="118" r="7" stroke-width="1.5" opacity=".7"/>
+                <g class="spokes" stroke-width="1.5" opacity=".55"></g>
+              </svg>
+              <div class="cap">Bay 02</div>
+            </div>
+            <div class="card" style="left:22px;top:700px;width:356px;height:98px"><div class="n">01</div><div class="t">Servicing</div><div class="s">Oil, filters and checks.</div></div>
+            <div class="card" style="left:22px;top:810px;width:356px;height:98px"><div class="n">02</div><div class="t">Brakes</div><div class="s">Pads, discs and fluid.</div></div>
+            <div class="card" style="left:22px;top:920px;width:356px;height:98px"><div class="n">03</div><div class="t">Bodywork</div><div class="s">Dents, scratches and paint.</div></div>
+          </div></div>
+          <!-- Mobile: barber -->
+          <div class="layer mob" id="m-bar"><div class="in">
+            <div class="d-el gar-word" style="left:22px;top:23px;font-size:12px">Barber</div>
+            <div class="btn btn-line" style="left:298px;top:16px;width:80px;height:32px;font-size:13px">Book</div>
+            <div class="d-el gar-eyebrow" style="left:22px;top:80px;font-size:10.5px">Cuts / Beards / Kids</div>
+            <div class="d-el bar-h" style="left:22px;top:104px;font-size:60px">Sharp cuts.<br>No waiting.</div>
+            <div class="d-el gar-body" style="left:22px;top:238px;font-size:15px">Pick a time. We will be ready.</div>
+            <div class="abs" style="left:22px;top:282px;width:356px;height:330px;background:var(--shallow-2);border-radius:16px">
+              <div class="d-el gar-eyebrow" style="left:18px;top:20px;font-size:10.5px;color:var(--foam-66)">Saturday</div>
+              <div class="slot-sel" id="slot-sel"></div>
+              <div class="slot off" style="left:18px;top:52px">9:00</div>
+              <div class="slot" style="left:128px;top:52px">9:30</div>
+              <div class="slot off" style="left:238px;top:52px">10:00</div>
+              <div class="slot" style="left:18px;top:102px" id="slot-a">10:30</div>
+              <div class="slot" style="left:128px;top:102px" id="slot-b">11:00</div>
+              <div class="slot" style="left:238px;top:102px">11:30</div>
+              <div class="slot off" style="left:18px;top:152px">1:00</div>
+              <div class="slot" style="left:128px;top:152px">1:30</div>
+              <div class="slot" style="left:238px;top:152px">2:00</div>
+              <div class="btn btn-aqua" style="left:18px;top:216px;width:320px;height:48px;font-size:15px">Confirm booking</div>
+              <div class="d-el gar-body" style="left:18px;top:282px;font-size:13px">You get a reminder on WhatsApp.</div>
+            </div>
+            <div class="svc" style="top:644px"><div class="a">Cut</div><div class="b">30 min</div></div>
+            <div class="svc" style="top:702px"><div class="a">Cut and beard</div><div class="b">45 min</div></div>
+            <div class="svc" style="top:760px"><div class="a">Kids cut</div><div class="b">20 min</div></div>
+          </div></div>
+          <!-- Mobile: roti shop -->
+          <div class="layer mob" id="m-roti"><div class="in">
+            <div class="d-el gar-word" style="left:22px;top:23px;font-size:12px;color:var(--ink)">Roti</div>
+            <div class="burger" style="left:348px;top:26px"><i></i><i></i></div>
+            <div class="d-el gar-eyebrow" style="left:22px;top:80px;font-size:10.5px;color:var(--teal)">Chicken / Beef / Vegetable</div>
+            <div class="d-el roti-h" style="left:20px;top:104px;font-size:64px">Hot roti.<br>Order ahead.</div>
+            <div class="menu-row" style="top:282px"><div class="a">Chicken roti</div><div class="b">Add</div></div>
+            <div class="menu-row" style="top:344px"><div class="a">Beef roti</div><div class="b">Add</div></div>
+            <div class="menu-row" style="top:406px"><div class="a">Vegetable roti</div><div class="b">Add</div></div>
+            <div class="menu-row" style="top:468px"><div class="a">Pepper sauce</div><div class="b">Add</div></div>
+            <div class="btn btn-coral" id="roti-btn" style="left:22px;top:550px;width:356px;height:56px;font-size:17px">Order on WhatsApp</div>
+            <div class="d-el gar-body" style="left:22px;top:624px;font-size:14px;color:var(--ink-72)">We confirm your order in minutes.</div>
+          </div></div>
+          <div class="abs" id="mwipe" style="top:0;width:2px;height:804px;background:var(--aqua);opacity:0"></div>
+        </div>
+      </div>
+    </div>
+    <div class="chrome f-deep" id="c23">
+      <div class="c-rule"></div>
+      <div class="c-mask c-eyebrow roll"><span>Design and build</span><span>Who we build for</span></div>
+      <div class="c-mask c-counter roll"><span>02 / 05</span><span>03 / 05</span></div>
+      <div class="c-hair"></div>
+      <div class="c-mask c-handle"><span class="lc">@sandiford.digital</span></div>
+      <div class="c-mask c-site"><span class="lc">sandiford-digital.com</span></div>
+    </div>
+    <svg class="cursor" id="cur2" viewBox="0 0 46 56"><path d="M4 4 L4 44 L14.5 34.5 L21.5 50 L29 46.6 L22 31.4 L36 31.4 Z" fill="#EAF7FA" stroke="#04202E" stroke-width="2.5" stroke-linejoin="round"/></svg>
+  </div>
+
+  <!-- ===================== 04 · Reports (aqua) ===================== -->
+  <div class="region" id="r4">
+    <div class="scene" id="s4">
+      <div class="abs serif hl" id="s4-head">
+        <span class="line"><span class="w">A</span> <span class="w">report</span> <span class="w">every</span> <span class="w">month.</span></span>
+        <span class="line it"><span class="w">In</span> <span class="w">plain</span> <span class="w">English.</span></span>
+      </div>
+      <div class="s4-label" id="s4-ylab" style="left:90px;top:648px"><span class="line" style="padding:0;margin:0"><span class="w">Visits, calls, WhatsApp taps</span></span></div>
+      <div class="s4-grid" style="top:722px"></div>
+      <div class="s4-grid" style="top:832px"></div>
+      <div class="s4-grid" style="top:942px"></div>
+      <div class="s4-grid" style="top:1052px"></div>
+      <div class="s4-grid" id="s4-base" style="top:1162px;background:rgba(4,32,46,.4)"></div>
+      <svg id="s4-chart" width="1080" height="1920">
+        <defs><clipPath id="s4-clip"><rect id="s4-cliprect" x="0" y="0" width="0" height="1920"/></clipPath></defs>
+        <path id="s4-area" fill="rgba(4,32,46,.08)" clip-path="url(#s4-clip)"/>
+        <path id="s4-line" fill="none" stroke="#04202E" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle id="s4-dot" r="13" fill="#FF7A5C"/>
+      </svg>
+      <div id="s4-months"></div>
+      <div class="abs" id="s4-cap"><span class="line" style="padding:.05em .1em .2em 0;margin:-.05em -.1em -.2em 0"><span class="w">What happened.</span> <span class="w">What we fix next.</span></span></div>
+    </div>
+    <div class="chrome f-aqua" id="c4">
+      <div class="c-rule"></div>
+      <div class="c-mask c-eyebrow"><span>Monthly reports</span></div>
+      <div class="c-mask c-counter"><span>04 / 05</span></div>
+      <div class="c-hair"></div>
+      <div class="c-mask c-handle"><span class="lc">@sandiford.digital</span></div>
+      <div class="c-mask c-site"><span class="lc">sandiford-digital.com</span></div>
+    </div>
+  </div>
+
+  <!-- ===================== 05 · Sign off (deep) ===================== -->
+  <div class="region" id="r5">
+    <div class="scene" id="s5">
+      <div id="s5-logo"><img id="logo-img" alt=""></div>
+      <div class="serif" id="s5-word">
+        <span class="line" id="s5-l1"></span>
+        <span class="line it accent-aqua" id="s5-l2"></span>
+      </div>
+      <div id="s5-rule"></div>
+      <div id="s5-cta"><div class="btn btn-coral">Message us on WhatsApp</div></div>
+    </div>
+    <div class="chrome f-deep" id="c5">
+      <div class="c-rule"></div>
+      <div class="c-mask c-eyebrow"><span>Get in touch</span></div>
+      <div class="c-mask c-counter"><span>05 / 05</span></div>
+      <div class="c-hair"></div>
+      <div class="c-mask c-handle"><span class="lc">@sandiford.digital</span></div>
+      <div class="c-mask c-site"><span class="lc">sandiford-digital.com</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const W = 1080, H = 1920, FPS = 30, DUR = 15;
+
+/* ---------------- Easing: the brand curves, solved exactly ---------------- */
+function bezier(x1, y1, x2, y2) {
+  const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
+  const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
+  const sx = t => ((ax * t + bx) * t + cx) * t;
+  const sy = t => ((ay * t + by) * t + cy) * t;
+  const dx = t => (3 * ax * t + 2 * bx) * t + cx;
+  return x => {
+    if (x <= 0) return 0;
+    if (x >= 1) return 1;
+    let t = x;
+    for (let i = 0; i < 8; i++) {
+      const e = sx(t) - x;
+      if (Math.abs(e) < 1e-7) return sy(t);
+      const d = dx(t);
+      if (Math.abs(d) < 1e-6) break;
+      t -= e / d;
+    }
+    let lo = 0, hi = 1; t = x;
+    for (let i = 0; i < 40; i++) {
+      const v = sx(t);
+      if (Math.abs(v - x) < 1e-7) break;
+      if (v < x) lo = t; else hi = t;
+      t = (lo + hi) / 2;
+    }
+    return sy(t);
+  };
+}
+const E = {
+  text: bezier(0.22, 1, 0.36, 1),   // ease out quint: text reveals
+  group: bezier(0.16, 1, 0.3, 1),   // ease out expo: group reveals
+  wipe: bezier(0.83, 0, 0.17, 1),   // ease in out quint: wipes and rules
+  move: bezier(0.65, 0, 0.35, 1),   // ease in out cubic: scroll, cursor, morph
+  lin: x => x,
+};
+const cl = x => x < 0 ? 0 : x > 1 ? 1 : x;
+const mix = (a, b, p) => a + (b - a) * p;
+const prog = (t, s, d, e = E.lin) => e(cl((t - s) / d));
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+
+/* ---------------- Master timing (seconds) ----------------
+   Cut points sit on a 120 BPM grid (one beat is 0.5s) so the soundtrack lands with them. */
+const T = {
+  // 01 surface
+  head1: 0.16,                  // first word of the hook rises
+  cursor1: 1.0,                 // cursor glides to the phrase
+  click: 1.5,                   // phrase selected
+  restyle: { s: 1.6, d: 0.5 },  // wipe to italic teal
+  selOut: 2.2,
+  d1: { s: 2.5, d: 1.0 },       // descend: foam to deep
+  // 02 design and build
+  frame: 2.9,                   // browser outline draws on
+  head2: 3.0,
+  grid: 3.5,
+  wire: 3.6,
+  cursor2: 4.0,
+  drag: { s: 4.5, d: 0.4 },     // image block dragged onto the grid
+  design: 4.85,                 // designed site replaces the wireframe
+  skel: 5.38,                   // content collapses to a skeleton
+  morph: { s: 5.5, d: 0.72 },   // desktop to phone
+  // 03 who we build for
+  s3: 6.02,                     // headline and chrome hand over
+  site: 6.2,                    // first site, first word
+  swap1: { s: 7.0, d: 0.5 },    // garage to barber
+  pick: 7.6,                    // a time slot gets picked
+  swap2: { s: 8.0, d: 0.5 },    // barber to roti
+  tap: 8.62,                    // order button pressed
+  // 04 monthly reports
+  wipe: { s: 9.0, d: 0.6 },     // deep to aqua
+  chart: { s: 10.0, d: 1.0 },   // tide line draws
+  dot: 11.0,
+  d2: { s: 11.5, d: 0.85 },     // descend: aqua to deep
+  // 05 sign off
+  sign: 12.0,
+  cta: 13.05,
+};
+const S3W = [T.site + 0.04, T.swap1.s + 0.06, T.swap2.s + 0.06, T.swap2.s + 0.15];  // words of headline 03
+const SW = [T.site, T.swap1.s + 0.08, T.swap2.s + 0.08];                            // index numerals
+const charStart = i => i < 9 ? T.sign + 0.1 + i * 0.035 : T.sign + 0.42 + (i - 9) * 0.035;
+
+/* ---------------- Water shader ---------------- */
+const VS = `#version 300 es
+in vec2 p; void main(){ gl_Position = vec4(p, 0.0, 1.0); }`;
+const FS = `#version 300 es
+precision highp float;
+out vec4 o;
+uniform vec2 R; uniform float T, SC;
+uniform int MODE, FA, FB;
+uniform float EDGE, AMP, PH, SA, SB, LINE;
+uniform vec3 VIG;
+const vec3 FOAM = vec3(0.9176, 0.9686, 0.9804);
+const vec3 DEEP = vec3(0.0157, 0.1255, 0.1804);
+const vec3 SHAL = vec3(0.0431, 0.2314, 0.3098);
+const vec3 AQUA = vec3(0.1765, 0.8314, 0.7490);
+const vec3 TEAL = vec3(0.0588, 0.4627, 0.4314);
+vec2 h2(vec2 p){ p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3))); return fract(sin(p) * 43758.5453) * 2.0 - 1.0; }
+float gn(vec2 p){
+  vec2 i = floor(p), f = fract(p);
+  vec2 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
+  return mix(mix(dot(h2(i), f), dot(h2(i + vec2(1, 0)), f - vec2(1, 0)), u.x),
+             mix(dot(h2(i + vec2(0, 1)), f - vec2(0, 1)), dot(h2(i + vec2(1, 1)), f - vec2(1, 1)), u.x), u.y);
+}
+float fbm(vec2 p){ float a = 0.5, s = 0.0; mat2 m = mat2(1.6, 1.2, -1.2, 1.6); for (int i = 0; i < 4; i++){ s += a * gn(p); p = m * p; a *= 0.5; } return s; }
+float fbm2(vec2 p){ return 0.5 * gn(p) + 0.25 * gn(mat2(1.6, 1.2, -1.2, 1.6) * p); }
+float voro(vec2 p, float t){
+  vec2 ip = floor(p), fp = fract(p); float f1 = 8.0, f2 = 8.0;
+  for (int j = -1; j <= 1; j++) for (int i = -1; i <= 1; i++){
+    vec2 g = vec2(float(i), float(j));
+    vec2 r = h2(ip + g) * 0.5 + 0.5;
+    r = 0.5 + 0.42 * sin(t + 6.2831 * r);
+    float d = length(g + r - fp);
+    if (d < f1){ f2 = f1; f1 = d; } else if (d < f2){ f2 = d; }
+  }
+  return f2 - f1;
+}
+float caustic(vec2 p, float t){
+  vec2 w = vec2(fbm2(p * 0.35 + vec2(0.0, t * 0.05)), fbm2(p * 0.35 + vec2(5.2, 1.3 - t * 0.04)));
+  vec2 q = p + w * 1.3;
+  float a = voro(q, t * 0.7);
+  float b = voro(q * 1.6 + vec2(3.1, 7.7), -t * 0.55);
+  return clamp(smoothstep(0.17, 0.0, a) * 0.75 + smoothstep(0.12, 0.0, b) * 0.45, 0.0, 1.0);
+}
+float level(vec2 q){ return fbm(q * 0.00135 + vec2(T * 0.010, -T * 0.006)) * 11.0; }
+vec3 shade(int id, vec2 p, vec2 q, float k, float fw){
+  vec3 base, lc, cc; float la, ca;
+  if (id == 0){ base = FOAM; lc = TEAL; la = 0.10; cc = FOAM; ca = 0.0; }
+  else if (id == 1){
+    float d = length((p - VIG.xy) / vec2(820.0, 1060.0));
+    base = mix(DEEP, mix(SHAL, DEEP, smoothstep(0.0, 1.0, d)), VIG.z);
+    lc = AQUA; la = 0.075; cc = AQUA; ca = 0.06;
+  } else { base = AQUA; lc = DEEP; la = 0.09; cc = FOAM; ca = 0.095; }
+  float d = abs(fract(k + 0.5) - 0.5) / max(fw, 1e-4) * SC;
+  float lev = floor(k + 0.5);
+  float major = 1.0 - step(0.5, abs(mod(lev, 4.0)));
+  float lw = mix(0.35, 0.75, major);
+  float line = 1.0 - smoothstep(lw, lw + 0.9, d);
+  vec3 col = mix(base, lc, line * la * mix(1.0, 1.6, major));
+  if (ca > 0.0) col = mix(col, cc, caustic(q * 0.0052, T * 0.6) * ca);
+  return col;
+}
+void main(){
+  vec2 p = vec2(gl_FragCoord.x, R.y - gl_FragCoord.y) * SC;
+  vec2 qa = p + vec2(0.0, SA);
+  float ka = level(qa), fa = fwidth(ka);
+  vec3 col;
+  if (MODE == 0){
+    col = shade(FA, p, qa, ka, fa);
+  } else {
+    vec2 qb = p + vec2(0.0, SB);
+    float kb = level(qb), fb = fwidth(kb);
+    if (MODE == 1){
+      float wy = EDGE + AMP * (0.7 * sin(p.x * 0.0105 + PH) + 0.3 * sin(p.x * 0.0047 - PH * 0.6));
+      float d = p.y - wy;
+      col = mix(shade(FA, p, qa, ka, fa), shade(FB, p, qb, kb, fb), smoothstep(-0.6 * SC, 0.6 * SC, d));
+      col = mix(col, AQUA, LINE * (1.0 - smoothstep(1.1, 1.1 + 1.2 * SC, abs(d - 0.5))));
+    } else {
+      float d = EDGE - p.x;
+      col = mix(shade(FA, p, qa, ka, fa), shade(FB, p, qb, kb, fb), smoothstep(-0.6 * SC, 0.6 * SC, d));
+    }
+  }
+  o = vec4(col, 1.0);
+}`;
+
+// The water renders at 1/BG of full size and is scaled up: it is soft texture, and this keeps
+// software rendering fast. ?bg=1 renders it at full size.
+const BG = parseFloat(new URLSearchParams(location.search).get('bg') || '2');
+const canvas = $('#water');
+canvas.width = Math.round(W / BG); canvas.height = Math.round(H / BG);
+const gl = canvas.getContext('webgl2', { preserveDrawingBuffer: true, antialias: false });
+function compile(type, src) {
+  const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+  return s;
+}
+const prog_ = gl.createProgram();
+gl.attachShader(prog_, compile(gl.VERTEX_SHADER, VS));
+gl.attachShader(prog_, compile(gl.FRAGMENT_SHADER, FS));
+gl.linkProgram(prog_);
+if (!gl.getProgramParameter(prog_, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog_));
+gl.useProgram(prog_);
+const buf = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+const loc = gl.getAttribLocation(prog_, 'p');
+gl.enableVertexAttribArray(loc);
+gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+const U = {};
+for (const n of ['R', 'T', 'SC', 'MODE', 'FA', 'FB', 'EDGE', 'AMP', 'PH', 'SA', 'SB', 'LINE', 'VIG']) U[n] = gl.getUniformLocation(prog_, n);
+gl.viewport(0, 0, canvas.width, canvas.height);
+gl.uniform2f(U.R, canvas.width, canvas.height);
+gl.uniform1f(U.SC, W / canvas.width);
+
+function drawWater(u) {
+  gl.uniform1f(U.T, u.T);
+  gl.uniform1i(U.MODE, u.MODE); gl.uniform1i(U.FA, u.FA); gl.uniform1i(U.FB, u.FB);
+  gl.uniform1f(U.EDGE, u.EDGE); gl.uniform1f(U.AMP, u.AMP); gl.uniform1f(U.PH, u.PH);
+  gl.uniform1f(U.SA, u.SA); gl.uniform1f(U.SB, u.SB); gl.uniform1f(U.LINE, u.LINE);
+  gl.uniform3f(U.VIG, u.VIG[0], u.VIG[1], u.VIG[2]);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+}
+
+/* ---------------- Waterline shared by shader and DOM clips ---------------- */
+const WAVE_AMP = 14;
+const waveY = (x, edge, ph) => edge + WAVE_AMP * (0.7 * Math.sin(x * 0.0105 + ph) + 0.3 * Math.sin(x * 0.0047 - ph * 0.6));
+function wavePoly(edge, ph, below) {
+  const pts = [];
+  for (let x = 0; x <= W; x += 30) pts.push(`${x}px ${waveY(x, edge, ph).toFixed(2)}px`);
+  return below
+    ? `polygon(${pts.join(',')}, ${W}px ${H + 40}px, 0px ${H + 40}px)`
+    : `polygon(0px -40px, ${W}px -40px, ${pts.slice().reverse().join(',')})`;
+}
+const wipePoly = (x, left) => left
+  ? `polygon(-10px -10px, ${x}px -10px, ${x}px ${H + 10}px, -10px ${H + 10}px)`
+  : `polygon(${x}px -10px, ${W + 10}px -10px, ${W + 10}px ${H + 10}px, ${x}px ${H + 10}px)`;
+
+/* ---------------- Helpers for the brand moves ---------------- */
+function riseIn(el, t, s, d = 1.0) {           // masked text rise, 115%
+  const p = prog(t, s, d, E.text);
+  el.style.transform = `translateY(${((1 - p) * 115).toFixed(3)}%)`;
+  el.style.opacity = Math.min(1, p * 1.35).toFixed(4);
+  return p;
+}
+function riseInOut(el, t, s, outS, d = 1.0, outD = 0.55) {
+  if (outS !== undefined && t >= outS) {
+    const q = prog(t, outS, outD, E.wipe);
+    el.style.transform = `translateY(${(-q * 115).toFixed(3)}%)`;
+    el.style.opacity = (1 - q).toFixed(4);
+    return;
+  }
+  riseIn(el, t, s, d);
+}
+function groupIn(el, t, s, d = 0.9, dy = 40) { // group reveal: 40px rise plus fade
+  const p = prog(t, s, d, E.group);
+  el.style.transform = `translateY(${((1 - p) * dy).toFixed(2)}px)`;
+  el.style.opacity = p.toFixed(4);
+  return p;
+}
+function ruleIn(el, t, s, d = 0.5) {           // scaleX from the left
+  const p = prog(t, s, d, E.wipe);
+  el.style.transform = `scaleX(${p.toFixed(4)})`;
+  return p;
+}
+function show(el, on) { el.style.visibility = on ? 'inherit' : 'hidden'; }
+function showRegion(el, on) { el.style.display = on ? 'block' : 'none'; }
+function words(sel) { return $$(sel + ' .w'); }
+
+/* ---------------- Build dynamic bits ---------------- */
+// Wheel spokes
+for (const g of $$('.wheel .spokes')) {
+  const svg = g.ownerSVGElement;
+  const cx = +svg.querySelector('circle').getAttribute('cx'), cy = +svg.querySelector('circle').getAttribute('cy');
+  const big = +svg.querySelectorAll('circle')[2].getAttribute('r'), small = +svg.querySelectorAll('circle')[3].getAttribute('r');
+  for (let i = 0; i < 10; i++) {
+    const a = i / 10 * Math.PI * 2 + 0.2;
+    const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    l.setAttribute('x1', cx + Math.cos(a) * small); l.setAttribute('y1', cy + Math.sin(a) * small);
+    l.setAttribute('x2', cx + Math.cos(a) * big); l.setAttribute('y2', cy + Math.sin(a) * big);
+    g.appendChild(l);
+  }
+}
+
+// Layout grid: 12 columns, 40px margins, 20px gutters on the 900px desktop screen
+for (let i = 0; i < 12; i++) {
+  const c = document.createElement('div'); c.className = 'col'; c.style.left = (40 + i * 70) + 'px';
+  $('#grid').appendChild(c);
+}
+
+// Wireframe outlines (screen coordinates of the desktop screen)
+const WIRE_RECTS = [
+  { x: 40, y: 20, w: 120, h: 22, r: 4 },     // logo
+  { x: 540, y: 18, w: 320, h: 28, r: 6 },    // nav
+  { x: 40, y: 340, w: 170, h: 46, r: 23 },   // button 1
+  { x: 222, y: 340, w: 140, h: 46, r: 23 },  // button 2
+  { x: 40, y: 430, w: 260, h: 110, r: 12 },  // cards
+  { x: 320, y: 430, w: 260, h: 110, r: 12 },
+  { x: 600, y: 430, w: 260, h: 110, r: 12 },
+];
+const WIRE_BARS = [
+  { x: 40, y: 98, w: 230 },                  // eyebrow
+  { x: 40, y: 128, w: 300, h: 40 }, { x: 40, y: 182, w: 230, h: 40 }, { x: 40, y: 236, w: 270, h: 40 }, // headline
+  { x: 40, y: 302, w: 280 },                 // body
+  { x: 58, y: 458, w: 70 }, { x: 58, y: 482, w: 160 },
+  { x: 338, y: 458, w: 70 }, { x: 338, y: 482, w: 150 },
+  { x: 618, y: 458, w: 70 }, { x: 618, y: 482, w: 170 },
+];
+const SVGNS = 'http://www.w3.org/2000/svg';
+const wireRects = WIRE_RECTS.map(r => {
+  const e = document.createElementNS(SVGNS, 'rect');
+  e.setAttribute('x', r.x + 0.75); e.setAttribute('y', r.y + 0.75);
+  e.setAttribute('width', r.w - 1.5); e.setAttribute('height', r.h - 1.5); e.setAttribute('rx', r.r);
+  const per = 2 * (r.w + r.h) - (8 - 2 * Math.PI) * r.r;
+  e.style.strokeDasharray = per; e.dataset.per = per;
+  $('#wire-svg').appendChild(e);
+  return e;
+});
+const wireBars = WIRE_BARS.map(b => {
+  const e = document.createElement('div'); e.className = 'bar';
+  Object.assign(e.style, { left: b.x + 'px', top: b.y + 'px', width: b.w + 'px', height: (b.h || 12) + 'px', borderRadius: ((b.h || 12) / 2) + 'px' });
+  $('#wire-bars').appendChild(e);
+  return e;
+});
+const wimgParts = Array.from($('#wimg-svg').children);
+wimgParts.forEach(e => {
+  const per = e.tagName === 'rect' ? 2 * (328.5 + 308.5) - (8 - 2 * Math.PI) * 14 : Math.hypot(302, 282);
+  e.style.strokeDasharray = per; e.dataset.per = per;
+});
+
+// Skeleton blocks: desktop rect to phone rect (screen coordinates)
+const SKEL = [
+  { d: [40, 20, 120, 22], m: [22, 22, 110, 20] },
+  { d: [540, 18, 320, 28], m: [340, 20, 38, 16] },
+  { d: [40, 96, 240, 12], m: [22, 80, 230, 11] },
+  { d: [40, 122, 330, 160], m: [22, 102, 300, 146] },
+  { d: [40, 300, 260, 18], m: [22, 266, 250, 18] },
+  { d: [40, 340, 170, 46], m: [22, 312, 356, 50] },
+  { d: [222, 340, 140, 46], m: [22, 372, 356, 50] },
+  { d: [530, 84, 330, 310], m: [22, 444, 356, 236] },
+  { d: [40, 430, 260, 110], m: [22, 700, 356, 98] },
+  { d: [320, 430, 260, 110], m: [22, 810, 356, 98] },
+  { d: [600, 430, 260, 110], m: [22, 920, 356, 98] },
+];
+const skelEls = SKEL.map(() => { const e = document.createElement('div'); e.className = 'sk'; $('#skel').appendChild(e); return e; });
+
+// Sign off wordmark, split into characters
+for (const [id, txt] of [['#s5-l1', 'Sandiford'], ['#s5-l2', 'Digital.']]) {
+  for (const ch of txt) { const s = document.createElement('span'); s.className = 'ch'; s.textContent = ch; $(id).appendChild(s); }
+}
+
+// Report chart: a tide line through the months
+// A tide, not a growth curve: the chart illustrates the report, it does not claim a result.
+const CH = { x0: 96, x1: 984, ys: [963, 913, 927, 993, 1051, 1051, 992, 926, 913] };
+function chartPath() {
+  const n = CH.ys.length, pts = CH.ys.map((y, i) => [mix(CH.x0, CH.x1, i / (n - 1)), y]);
+  let d = `M${pts[0][0]},${pts[0][1]}`;
+  for (let i = 0; i < n - 1; i++) {
+    const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(n - 1, i + 2)];
+    const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+    const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+    d += ` C${c1[0].toFixed(1)},${c1[1].toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)} ${p2[0]},${p2[1]}`;
+  }
+  return { d, end: pts[n - 1] };
+}
+const chart = chartPath();
+$('#s4-line').setAttribute('d', chart.d);
+$('#s4-area').setAttribute('d', chart.d + ` L${CH.x1},1162 L${CH.x0},1162 Z`);
+$('#s4-dot').setAttribute('cx', chart.end[0]); $('#s4-dot').setAttribute('cy', chart.end[1]);
+const lineLen = $('#s4-line').getTotalLength();
+$('#s4-line').style.strokeDasharray = lineLen;
+['May', 'Jun', 'Jul', 'Aug', 'Sep'].forEach((m, i) => {
+  const e = document.createElement('div'); e.className = 's4-label';
+  e.style.top = '1190px';
+  e.innerHTML = `<span class="line" style="padding:0 .1em;margin:0 -.1em"><span class="w">${m}</span></span>`;
+  const x = mix(CH.x0, CH.x1, i / 4);
+  e.style.left = (i === 4 ? x - 52 : i === 0 ? x - 6 : x - 26) + 'px';
+  $('#s4-months').appendChild(e);
+});
+
+/* ---------------- Measurements taken once fonts are ready ---------------- */
+const M = {};
+function measure() {
+  const s1 = $('#s1').getBoundingClientRect();
+  const rr = $('#r-roman').getBoundingClientRect(), ri = $('#r-italic').getBoundingClientRect();
+  M.roman = { x: rr.left - s1.left, y: rr.top - s1.top, w: rr.width, h: rr.height };
+  M.italic = { x: ri.left - s1.left, y: ri.top - s1.top, w: ri.width, h: ri.height };
+  $('#restyle').style.width = Math.max(rr.width, ri.width) + 'px';
+}
+
+/* ---------------- Device geometry ---------------- */
+const DESK = { x: 90, y: 668, w: 900, h: 640, r: 20, bar: 46 };
+const PHONE = { x: 566, y: 652, w: 424, h: 828, r: 32, inset: 12, sr: 20 };
+
+/* ---------------- The frame function ---------------- */
+let hasLogo = false;
+function renderAt(t) {
+  const u = { T: t, MODE: 0, FA: 0, FB: 1, EDGE: 0, AMP: WAVE_AMP, PH: t * 2.1, SA: 0, SB: 0, LINE: 0, VIG: [540, 1040, 0.0] };
+
+  // ---------- Regions and transitions ----------
+  const r1 = $('#r1'), r23 = $('#r23'), r4 = $('#r4'), r5 = $('#r5');
+  const d1 = prog(t, T.d1.s, T.d1.d, E.move);
+  const wp = prog(t, T.wipe.s, T.wipe.d, E.wipe);
+  const d2 = prog(t, T.d2.s, T.d2.d, E.move);
+  const water1 = mix(H + 60, -60, d1), water2 = mix(H + 60, -60, d2);
+  const wipeX = mix(-4, W + 4, wp);
+  let s1y = 0, s23y = 0, s4x = 0, s4y = 0, s5y = 0;
+
+  if (t < T.d1.s) {
+    u.MODE = 0; u.FA = 0;
+    showRegion(r1, 1); showRegion(r23, 0); showRegion(r4, 0); showRegion(r5, 0);
+    r1.style.clipPath = 'none';
+  } else if (t < T.d1.s + T.d1.d) {
+    u.MODE = 1; u.FA = 0; u.FB = 1; u.EDGE = water1; u.LINE = 1;
+    s1y = water1 - (H + 60); s23y = water1 + 60;
+    u.SA = -s1y * 0.92; u.SB = -s23y * 0.92;
+    u.VIG = [540, 1000 + s23y, 0.35];
+    showRegion(r1, 1); showRegion(r23, 1); showRegion(r4, 0); showRegion(r5, 0);
+    r1.style.clipPath = wavePoly(water1, u.PH, false);
+    r23.style.clipPath = wavePoly(water1, u.PH, true);
+  } else if (t < T.wipe.s) {
+    u.MODE = 0; u.FA = 1; u.VIG = [540, 1000, 0.35];
+    showRegion(r1, 0); showRegion(r23, 1); showRegion(r4, 0); showRegion(r5, 0);
+    r23.style.clipPath = 'none';
+  } else if (t < T.wipe.s + T.wipe.d) {
+    u.MODE = 2; u.FA = 1; u.FB = 2; u.EDGE = wipeX; u.VIG = [540, 1000, 0.35];
+    s4x = -90 * (1 - wp);
+    showRegion(r1, 0); showRegion(r23, 1); showRegion(r4, 1); showRegion(r5, 0);
+    r23.style.clipPath = wipePoly(wipeX, false);
+    r4.style.clipPath = wipePoly(wipeX, true);
+  } else if (t < T.d2.s) {
+    u.MODE = 0; u.FA = 2;
+    showRegion(r1, 0); showRegion(r23, 0); showRegion(r4, 1); showRegion(r5, 0);
+    r4.style.clipPath = 'none';
+  } else if (t < T.d2.s + T.d2.d) {
+    u.MODE = 1; u.FA = 2; u.FB = 1; u.EDGE = water2; u.LINE = 1;
+    s4y = water2 - (H + 60); s5y = water2 + 60;
+    u.SA = -s4y * 0.92; u.SB = -s5y * 0.92;
+    u.VIG = [540, 1000 + s5y, 0.7];
+    showRegion(r1, 0); showRegion(r23, 0); showRegion(r4, 1); showRegion(r5, 1);
+    r4.style.clipPath = wavePoly(water2, u.PH, false);
+    r5.style.clipPath = wavePoly(water2, u.PH, true);
+  } else {
+    u.MODE = 0; u.FA = 1; u.VIG = [540, 1000, 0.7];
+    showRegion(r1, 0); showRegion(r23, 0); showRegion(r4, 0); showRegion(r5, 1);
+    r5.style.clipPath = 'none';
+  }
+  $('#s1').style.transform = `translateY(${s1y.toFixed(2)}px)`;
+  $('#s23').style.transform = `translateY(${s23y.toFixed(2)}px)`;
+  $('#s4').style.transform = `translate(${s4x.toFixed(2)}px, ${s4y.toFixed(2)}px)`;
+  $('#s5').style.transform = `translateY(${s5y.toFixed(2)}px)`;
+  drawWater(u);
+
+  scene1(t);
+  scene23(t);
+  scene4(t);
+  scene5(t);
+}
+
+/* ---------------- 01 · Surface ---------------- */
+function scene1(t) {
+  if (t > T.d1.s + T.d1.d) return;
+  const c = $('#c1');
+  ruleIn(c.querySelector('.c-rule'), t, 0.05, 0.5);
+  riseIn(c.querySelector('.c-eyebrow>span'), t, 0.14);
+  riseIn(c.querySelector('.c-counter>span'), t, 0.22);
+  ruleIn(c.querySelector('.c-hair'), t, 0.1, 0.55);
+  riseIn(c.querySelector('.c-handle>span'), t, 0.26);
+  riseIn(c.querySelector('.c-site>span'), t, 0.34);
+
+  words('#s1-head').forEach((w, i) => riseIn(w, t, T.head1 + i * 0.09, 1.05));
+
+  // Live restyle: the last phrase is selected, then set in italic teal
+  const R = M.roman, I = M.italic;
+  const wpp = prog(t, T.restyle.s, T.restyle.d, E.wipe);
+  const span = Math.max(R.w, I.w) + 24;
+  const edge = R.x - 8 + wpp * span;
+  $('#r-roman').style.clipPath = `inset(-30% -20% -40% ${((edge - R.x)).toFixed(2)}px)`;
+  $('#r-italic').style.clipPath = `inset(-30% ${(I.x + I.w + 40 - edge).toFixed(2)}px -40% -20%)`;
+  const caret = $('#s1-caret');
+  caret.style.left = (edge - 2).toFixed(2) + 'px';
+  caret.style.top = (R.y + R.h * 0.12).toFixed(2) + 'px';
+  caret.style.height = (R.h * 0.78).toFixed(2) + 'px';
+  caret.style.opacity = (wpp > 0 && wpp < 1 ? Math.min(1, Math.min(wpp, 1 - wpp) * 12) : 0).toFixed(3);
+
+  // Selection box hugs the roman phrase, then eases to the italic one
+  const fit = prog(t, T.restyle.s + 0.1, 0.55, E.move);
+  const pad = 16;
+  const bx = mix(R.x, I.x, fit) - pad, by = Math.min(R.y, I.y) + R.h * 0.08 - pad;
+  const bw = mix(R.w, I.w, fit) + pad * 2, bh = R.h * 1.06 + pad * 2;
+  const sel = $('#s1-sel');
+  Object.assign(sel.style, { left: bx + 'px', top: by + 'px', width: bw + 'px', height: bh + 'px' });
+  const sIn = prog(t, T.click + 0.04, 0.22, E.group), sOut = prog(t, T.selOut, 0.22, E.move);
+  sel.style.opacity = (sIn * (1 - sOut)).toFixed(3);
+  sel.style.transform = `scale(${mix(1.03, 1, sIn).toFixed(4)})`;
+  for (const h of sel.querySelectorAll('.hd')) {
+    const [fx, fy] = h.dataset.h.split(',').map(Number);
+    h.style.left = (fx * bw - 7) + 'px'; h.style.top = (fy * bh - 7) + 'px';
+  }
+  const chip = $('#s1-chip');
+  const cp = prog(t, T.click + 0.12, 0.6, E.group);
+  chip.style.transform = `translateY(${((1 - cp) * -14).toFixed(2)}px)`;
+  chip.style.opacity = cp.toFixed(3);
+
+  // Cursor
+  const cur = $('#cur1');
+  const target = { x: R.x + R.w * 0.62, y: R.y + R.h * 0.62 };
+  const mv = prog(t, T.cursor1, 0.46, E.move);
+  const exit = prog(t, T.selOut + 0.02, 0.5, E.move);
+  const x = mix(mix(1130, target.x, mv), 1150, exit), y = mix(mix(1560, target.y, mv), 1700, exit);
+  const press = t >= T.click && t < T.click + 0.2 ? Math.sin(cl((t - T.click) / 0.2) * Math.PI) : 0;
+  cur.style.transform = `translate(${x.toFixed(2)}px, ${y.toFixed(2)}px) scale(${(1 - press * 0.14).toFixed(4)})`;
+  cur.style.opacity = (prog(t, T.cursor1 - 0.04, 0.18) * (1 - prog(t, T.selOut + 0.14, 0.2))).toFixed(3);
+}
+
+/* ---------------- 02 + 03 · Design, then range ---------------- */
+function scene23(t) {
+  if (t < T.d1.s || t > T.wipe.s + T.wipe.d) return;
+
+  // Chrome: labels roll from 02 to 03
+  const c = $('#c23');
+  const [e2, e3] = c.querySelectorAll('.c-eyebrow>span'), [n2, n3] = c.querySelectorAll('.c-counter>span');
+  riseInOut(e2, t, -1, T.s3, 1, 0.5); riseInOut(n2, t, -1, T.s3, 1, 0.5);
+  riseIn(e3, t, T.s3 + 0.12); riseIn(n3, t, T.s3 + 0.18);
+  c.querySelector('.c-rule').style.transform = 'scaleX(1)';
+  c.querySelector('.c-hair').style.transform = 'scaleX(1)';
+  for (const s of c.querySelectorAll('.c-handle>span,.c-site>span')) { s.style.transform = 'none'; s.style.opacity = 1; }
+
+  // Headline 02 rises in as the page settles, rises out for 03
+  words('#s2-head').forEach((w, i) => riseInOut(w, t, T.head2 + i * 0.09, T.s3 - 0.2 + i * 0.025, 1.0, 0.38));
+  // Headline 03 builds one word per site
+  words('#s3-head').forEach((w, i) => riseIn(w, t, S3W[i], 1.05));
+
+  // Big index numeral and label
+  $$('#s3-num .w').forEach((n, i) => riseInOut(n, t, SW[i], i < 2 ? SW[i + 1] - 0.08 : undefined, 1.0, 0.45));
+  $$('#s3-lab .w').forEach((n, i) => riseInOut(n, t, SW[i] + 0.06, i < 2 ? SW[i + 1] - 0.04 : undefined, 1.0, 0.45));
+
+  // ---- Device: browser outline draws on, then morphs to a phone ----
+  const m = prog(t, T.morph.s, T.morph.d, E.move);
+  const fx = mix(DESK.x, PHONE.x, m), fy = mix(DESK.y, PHONE.y, m);
+  const fw = mix(DESK.w, PHONE.w, m), fh = mix(DESK.h, PHONE.h, m), fr = mix(DESK.r, PHONE.r, m);
+  const dev = $('#dev');
+  Object.assign(dev.style, { left: fx + 'px', top: fy + 'px', width: fw + 'px', height: fh + 'px' });
+  const svg = $('#dev-outline'); svg.setAttribute('width', fw); svg.setAttribute('height', fh);
+  const rect = $('#dev-rect');
+  rect.setAttribute('x', 1); rect.setAttribute('y', 1); rect.setAttribute('width', fw - 2); rect.setAttribute('height', fh - 2);
+  rect.setAttribute('rx', fr);
+  const per = 2 * (fw + fh) - (8 - 2 * Math.PI) * fr;
+  const draw = prog(t, T.frame, 0.8, E.wipe);
+  rect.style.strokeDasharray = draw < 1 ? `${per} ${per}` : 'none';
+  rect.style.strokeDashoffset = draw < 1 ? (per * (1 - draw)).toFixed(2) : 0;
+
+  // Browser bar fades out early in the morph
+  const bar = $('#dev-bar'); bar.style.width = fw + 'px';
+  const barIn = prog(t, T.frame + 0.4, 0.6, E.group), barOut = prog(t, T.morph.s, 0.3, E.move);
+  for (const d of bar.querySelectorAll('.dot')) d.style.opacity = (barIn * (1 - barOut)).toFixed(3);
+  const url = bar.querySelector('.url');
+  url.style.left = (fw / 2 - 150) + 'px'; url.style.width = '300px';
+  url.style.opacity = (barIn * (1 - barOut)).toFixed(3);
+  const div = bar.querySelector('.div'); div.style.width = fw + 'px';
+  div.style.transform = `scaleX(${(prog(t, T.frame + 0.35, 0.55, E.wipe) * (1 - barOut)).toFixed(4)})`;
+  const spk = $('#dev-speaker');
+  Object.assign(spk.style, { left: (fw / 2 - 30) + 'px', top: '3.5px', width: '60px', opacity: prog(t, T.morph.s + T.morph.d - 0.2, 0.3).toFixed(3) });
+
+  // Screen rect: desktop content area to inset phone screen
+  const sx = mix(0, PHONE.inset, m), sy = mix(DESK.bar, PHONE.inset, m);
+  const sw = fw - 2 * sx, sh = fh - sy - mix(0, PHONE.inset, m);
+  const rTop = mix(0, PHONE.sr, m), rBot = mix(DESK.r - 1, PHONE.sr, m);
+  const scr = $('#dev-screen');
+  Object.assign(scr.style, { left: sx + 'px', top: sy + 'px', width: sw + 'px', height: sh + 'px',
+    borderRadius: `${rTop}px ${rTop}px ${rBot}px ${rBot}px` });
+
+  // ---- Inside the browser: grid, wireframe, drag, design ----
+  const desk = $('#desk'), grid = $('#grid'), wire = $('#wire');
+  // grid columns scale down from the top
+  $$('#grid .col').forEach((col, i) => {
+    const p = prog(t, T.grid + i * 0.025, 0.45, E.wipe);
+    col.style.transform = `scaleY(${p.toFixed(4)})`;
+  });
+  grid.style.opacity = (1 - prog(t, T.design + 0.08, 0.4, E.move)).toFixed(3);
+  // wireframe draws on
+  wireRects.forEach((r, i) => {
+    const p = prog(t, T.wire + i * 0.05, 0.55, E.wipe);
+    r.style.strokeDashoffset = (r.dataset.per * (1 - p)).toFixed(2);
+  });
+  wireBars.forEach((b, i) => ruleIn(b, t, T.wire + 0.16 + i * 0.03, 0.5));
+  wimgParts.forEach((e, i) => {
+    const p = prog(t, T.wire + 0.08 + i * 0.12, 0.5, E.wipe);
+    e.style.strokeDashoffset = (e.dataset.per * (1 - p)).toFixed(2);
+  });
+  wire.style.opacity = (1 - prog(t, T.design, 0.35, E.move)).toFixed(3);
+
+  // the image block starts off grid; the cursor drags it into column 8
+  const DS = T.drag.s, DD = T.drag.d;
+  const dp = prog(t, DS, DD, E.text);
+  const offX = mix(70, 0, dp), offY = mix(38, 0, dp);
+  const wimg = $('#wimg');
+  wimg.style.left = (530 + offX) + 'px'; wimg.style.top = (84 + offY) + 'px';
+  // snapping guides
+  const gOn = prog(t, DS + 0.18, 0.12) * (1 - prog(t, DS + DD + 0.06, 0.25));
+  Object.assign($('#g-v').style, { left: '529.5px', top: '0px', width: '1.5px', height: '594px', opacity: gOn.toFixed(3) });
+  Object.assign($('#g-h').style, { left: '0px', top: '83.5px', width: '900px', height: '1.5px', opacity: gOn.toFixed(3) });
+  const chip2 = $('#chip2');
+  chip2.style.left = (530 + offX) + 'px'; chip2.style.top = (84 + offY + 318) + 'px';
+  chip2.style.opacity = (prog(t, DS, 0.12) * (1 - prog(t, DS + DD + 0.1, 0.2))).toFixed(3);
+
+  // cursor in stage space
+  const cur = $('#cur2');
+  const scrX = DESK.x, scrY = DESK.y + DESK.bar + s23Offset(t);
+  const grab = { x: scrX + 530 + 70 + 200, y: scrY + 84 + 38 + 150 };
+  const enter = prog(t, T.cursor2, 0.42, E.move);
+  const leave = prog(t, DS + DD + 0.1, 0.5, E.move);
+  let cx = mix(1140, grab.x, enter), cy = mix(1500, grab.y, enter);
+  cx += (offX - 70); cy += (offY - 38);
+  cx = mix(cx, 1150, leave); cy = mix(cy, 1620, leave);
+  const pressOn = t >= DS - 0.06 && t < DS + DD + 0.08;
+  const pressAmt = pressOn ? Math.min(1, (t - (DS - 0.06)) / 0.06, (DS + DD + 0.08 - t) / 0.06) : 0;
+  cur.style.transform = `translate(${cx.toFixed(2)}px, ${cy.toFixed(2)}px) scale(${(1 - pressAmt * 0.12).toFixed(4)})`;
+  cur.style.opacity = (prog(t, T.cursor2 - 0.02, 0.15) * (1 - prog(t, DS + DD + 0.38, 0.2))).toFixed(3);
+
+  // designed site rises in over the wireframe
+  desk.querySelectorAll('.d-el').forEach((e, i) => {
+    const p = prog(t, T.design + i * 0.022, 0.7, E.group);
+    const out = prog(t, T.skel, 0.16, E.move);
+    e.style.transform = `translateY(${((1 - p) * 14).toFixed(2)}px)`;
+    e.style.opacity = (p * (1 - out)).toFixed(3);
+  });
+  show(desk, t < T.skel + 0.2);
+  $('#desk-bg').style.opacity = prog(t, T.design - 0.1, 0.5, E.move).toFixed(3);
+  show(grid, t < T.skel); show(wire, t < T.design + 0.4);
+
+  // skeleton reflow
+  const skIn = prog(t, T.skel - 0.04, 0.16, E.move), skOut = prog(t, T.morph.s + T.morph.d - 0.08, 0.3, E.move);
+  SKEL.forEach((b, i) => {
+    const k = prog(t, T.morph.s + i * 0.012, T.morph.d - 0.08, E.move);
+    const [x, y, w, h] = b.d.map((v, j) => mix(v, b.m[j], k));
+    Object.assign(skelEls[i].style, { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px' });
+  });
+  $('#skel').style.opacity = (skIn * (1 - skOut)).toFixed(3);
+  show($('#skel'), skIn > 0 && skOut < 1);
+
+  // ---- Phone: three sites ----
+  const mg = $('#m-gar'), mb = $('#m-bar'), mr = $('#m-roti');
+  const mobIn = T.morph.s + T.morph.d - 0.12;
+  show(mg, t >= mobIn && t < T.swap1.s + T.swap1.d + 0.05);
+  show(mb, t >= T.swap1.s && t < T.swap2.s + T.swap2.d + 0.05);
+  show(mr, t >= T.swap2.s);
+  // garage mobile content rises in
+  Array.from(mg.querySelector('.in').children).forEach((e, i) => {
+    const p = prog(t, mobIn + i * 0.03, 0.7, E.group);
+    e.style.transform = `translateY(${((1 - p) * 18).toFixed(2)}px)`;
+    e.style.opacity = p.toFixed(3);
+  });
+  // each site scrolls a little while it is on screen
+  mg.querySelector('.in').style.transform = `translateY(${(-mix(0, 150, prog(t, T.site + 0.15, 0.75, E.move))).toFixed(2)}px)`;
+  mb.querySelector('.in').style.transform = `translateY(${(-mix(0, 60, prog(t, T.pick + 0.12, 0.5, E.move))).toFixed(2)}px)`;
+  mr.querySelector('.in').style.transform = `translateY(${(-mix(0, 40, prog(t, T.swap2.s + 0.5, 0.6, E.move))).toFixed(2)}px)`;
+  // wipes between sites (scaleX from the left, as a clip)
+  const w1 = prog(t, T.swap1.s, T.swap1.d, E.wipe), w2 = prog(t, T.swap2.s, T.swap2.d, E.wipe);
+  mb.style.clipPath = `inset(0 ${((1 - w1) * 100).toFixed(3)}% 0 0)`;
+  mr.style.clipPath = `inset(0 ${((1 - w2) * 100).toFixed(3)}% 0 0)`;
+  const mw = $('#mwipe');
+  const wActive = (w1 > 0 && w1 < 1) ? w1 : (w2 > 0 && w2 < 1) ? w2 : -1;
+  mw.style.opacity = wActive < 0 ? 0 : Math.min(1, Math.min(wActive, 1 - wActive) * 10).toFixed(3);
+  mw.style.left = (wActive * 400 - 1).toFixed(2) + 'px';
+  // barber: a time gets picked
+  const pick = prog(t, T.pick, 0.32, E.move);
+  const sa = $('#slot-a'), sb = $('#slot-b');
+  const selEl = $('#slot-sel');
+  selEl.style.left = mix(18, 128, pick) + 'px'; selEl.style.top = '102px';
+  sa.style.color = pick < 0.5 ? 'var(--deep)' : 'var(--foam)';
+  sb.style.color = pick >= 0.5 ? 'var(--deep)' : 'var(--foam)';
+  sa.style.borderColor = pick < 0.5 ? 'transparent' : ''; sb.style.borderColor = pick >= 0.5 ? 'transparent' : '';
+  // roti: the order button gets a tap
+  const tap = t > T.tap && t < T.tap + 0.2 ? Math.sin((t - T.tap) / 0.2 * Math.PI) : 0;
+  $('#roti-btn').style.transform = `scale(${(1 - tap * 0.035).toFixed(4)})`;
+}
+function s23Offset(t) {
+  if (t >= T.d1.s + T.d1.d) return 0;
+  const d1 = prog(t, T.d1.s, T.d1.d, E.move);
+  return mix(H + 60, -60, d1) + 60;
+}
+
+/* ---------------- 04 · Reports ---------------- */
+function scene4(t) {
+  if (t < T.wipe.s || t > T.d2.s + T.d2.d) return;
+  words('#s4-head').forEach((w, i) => riseIn(w, t, T.wipe.s + 0.32 + i * 0.075, 1.0));
+  riseIn($('#s4-ylab .w'), t, T.wipe.s + 0.65, 0.9);
+  $$('.s4-grid').forEach((g, i) => ruleIn(g, t, T.wipe.s + 0.6 + i * 0.06, 0.55));
+  const lp = prog(t, T.chart.s, T.chart.d, E.move);
+  $('#s4-line').style.strokeDashoffset = (lineLen * (1 - lp)).toFixed(2);
+  $('#s4-cliprect').setAttribute('width', mix(CH.x0, CH.x1, lp) + 6);
+  const dp = prog(t, T.dot, 0.45, E.group);
+  $('#s4-dot').setAttribute('r', (13 * dp).toFixed(3));
+  $$('#s4-months .w').forEach((w, i) => riseIn(w, t, T.wipe.s + 0.85 + i * 0.06, 0.9));
+  $$('#s4-cap .w').forEach((w, i) => riseIn(w, t, T.chart.s + 0.3 + i * 0.12, 1.0));
+  const c = $('#c4');
+  for (const s of c.querySelectorAll('.c-mask>span')) { s.style.transform = 'none'; s.style.opacity = 1; }
+  c.querySelector('.c-rule').style.transform = 'scaleX(1)';
+  c.querySelector('.c-hair').style.transform = 'scaleX(1)';
+}
+
+/* ---------------- 05 · Sign off ---------------- */
+function scene5(t) {
+  if (t < T.d2.s) return;
+  const top = hasLogo ? 790 : 690;
+  if (hasLogo) $('#s5-logo').style.top = (top - 250) + 'px';
+  $('#s5-word').style.top = top + 'px';
+  $('#s5-rule').style.top = (top + 486) + 'px';
+  $('#s5-cta').style.top = (top + 546) + 'px';
+  if (hasLogo) groupIn($('#s5-logo'), t, T.sign - 0.1, 1.0, 40);
+  $$('#s5-word .ch').forEach((ch, i) => riseIn(ch, t, charStart(i), 1.1));
+  ruleIn($('#s5-rule'), t, T.sign + 0.95, 0.5);
+  groupIn($('#s5-cta'), t, T.cta, 0.9, 40);
+  const c = $('#c5');
+  for (const s of c.querySelectorAll('.c-mask>span')) { s.style.transform = 'none'; s.style.opacity = 1; }
+  c.querySelector('.c-rule').style.transform = 'scaleX(1)';
+  c.querySelector('.c-hair').style.transform = 'scaleX(1)';
+}
+
+/* ---------------- Motion estimate for the renderer's motion blur ---------------- */
+// Positions of the fastest movers, in px. The renderer samples these either side
+// of a frame to decide how many sub-frames it needs.
+function movers(t) {
+  const d1 = prog(t, T.d1.s, T.d1.d, E.move), d2 = prog(t, T.d2.s, T.d2.d, E.move);
+  const wp = prog(t, T.wipe.s, T.wipe.d, E.wipe), m = prog(t, T.morph.s, T.morph.d, E.move);
+  const w1 = prog(t, T.swap1.s, T.swap1.d, E.wipe), w2 = prog(t, T.swap2.s, T.swap2.d, E.wipe);
+  const textRise = s => 160 * prog(t, s, 1.0, E.text);
+  return [
+    2040 * d1, 2040 * d2, 1088 * wp, 476 * m, 400 * w1, 400 * w2,
+    textRise(T.head1), textRise(T.head2), textRise(S3W[0]), textRise(T.swap1.s), textRise(T.swap2.s),
+    textRise(T.wipe.s + 0.32), textRise(T.sign + 0.1), 250 * prog(t, SW[1] - 0.08, 0.45, E.wipe), 250 * prog(t, SW[2] - 0.08, 0.45, E.wipe),
+    900 * prog(t, T.cursor1, 0.46, E.move), 700 * prog(t, T.cursor2, 0.42, E.move),
+    600 * prog(t, T.drag.s + T.drag.d + 0.1, 0.5, E.move), 80 * prog(t, T.drag.s, T.drag.d, E.text),
+    400 * prog(t, T.selOut + 0.02, 0.5, E.move),
+  ];
+}
+function speed(t) {
+  const h = 0.5 / FPS, a = movers(t - h), b = movers(t + h);
+  let mx = 0; for (let i = 0; i < a.length; i++) mx = Math.max(mx, Math.abs(b[i] - a[i]));
+  return mx; // px per frame
+}
+
+/* ---------------- Sound cues, read by the audio builder ---------------- */
+// Every word reveal carries its horizontal position so its note can pan with it.
+function buildCues() {
+  const out = [];
+  const add = (t, k, extra = {}) => out.push({ t: +t.toFixed(3), k, ...extra });
+  const pan = el => { const r = el.getBoundingClientRect(); return +(((r.left + r.width / 2) / W) * 2 - 1).toFixed(3); };
+  add(0, 'open');
+  words('#s1-head').forEach((w, i) => add(T.head1 + i * 0.09, 'word', { pan: pan(w), n: i, scene: 1 }));
+  add(T.cursor1, 'cursor'); add(T.click, 'click'); add(T.restyle.s, 'restyle', { d: T.restyle.d });
+  add(T.d1.s, 'descend', { d: T.d1.d });
+  add(T.frame, 'draw');
+  words('#s2-head').forEach((w, i) => add(T.head2 + i * 0.09, 'word', { pan: pan(w), n: i, scene: 2 }));
+  add(T.grid, 'grid'); add(T.wire, 'wire');
+  add(T.cursor2, 'cursor'); add(T.drag.s - 0.06, 'click'); add(T.drag.s + T.drag.d * 0.55, 'snap');
+  add(T.design, 'design'); add(T.skel, 'skel'); add(T.morph.s, 'morph', { d: T.morph.d });
+  add(T.s3, 'roll');
+  words('#s3-head').forEach((w, i) => add(S3W[i], 'word', { pan: pan(w), n: i, scene: 3 }));
+  add(T.site, 'site'); add(T.swap1.s, 'swap', { d: T.swap1.d }); add(T.swap2.s, 'swap', { d: T.swap2.d });
+  add(T.pick, 'tap'); add(T.tap, 'tap');
+  add(T.wipe.s, 'wipe', { d: T.wipe.d });
+  words('#s4-head').forEach((w, i) => add(T.wipe.s + 0.32 + i * 0.075, 'word', { pan: pan(w), n: i, scene: 4 }));
+  add(T.chart.s, 'chart', { d: T.chart.d }); add(T.dot, 'dot');
+  add(T.d2.s, 'descend', { d: T.d2.d });
+  add(T.sign, 'sign');
+  $$('#s5-word .ch').forEach((ch, i) => add(charStart(i), 'char', { pan: pan(ch), n: i }));
+  add(T.cta, 'cta');
+  add(DUR, 'end');
+  return out.sort((a, b) => a.t - b.t);
+}
+
+/* ---------------- Boot ---------------- */
+window.seek = async (t) => {
+  renderAt(t);
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+};
+window.speed = speed;
+window.META = { W, H, FPS, DUR };
+window.ready = (async () => {
+  await document.fonts.load('340 172px Fraunces');
+  await document.fonts.load('italic 340 172px Fraunces');
+  await document.fonts.load('500 22px "JetBrains Mono"');
+  await document.fonts.load('800 48px Manrope');
+  await document.fonts.ready;
+  hasLogo = await new Promise(res => {
+    const img = $('#logo-img');
+    img.onload = () => res(true);
+    img.onerror = () => res(false);
+    img.src = 'assets/logo.png';
+  });
+  if (!hasLogo) $('#s5-logo').remove();
+  measure();
+  window.CUES = buildCues();
+  const q = new URLSearchParams(location.search);
+  if (q.has('play')) {
+    const t0 = performance.now();
+    const loop = () => { renderAt(((performance.now() - t0) / 1000) % DUR); requestAnimationFrame(loop); };
+    loop();
+  } else {
+    renderAt(q.has('t') ? parseFloat(q.get('t')) : 0);
+  }
+  return true;
+})();
+</script>
+</body>
+</html>
