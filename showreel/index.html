@@ -1,0 +1,681 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sandiford Digital showreel</title>
+<meta name="viewport" content="width=1920">
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+/* ---------- brand tokens (sandiford-brand-system) ---------- */
+:root{
+  --deep:#04202E; --shallow:#0B3B4F; --foam:#EAF7FA; --aqua:#2DD4BF; --teal:#0F766E; --coral:#FF7A5C; --sky:#38BDF8;
+  --deep2:#072B3D; --shallow2:#0F4A62; --foam2:#DCEFF3;
+  --ease-out-quint:cubic-bezier(.22,1,.36,1);
+}
+/* depth scopes: every surface is one field, ink and accent follow the field */
+.f-deep   {--field:var(--deep);    --ink:var(--foam); --muted:rgba(234,247,250,.66); --accent:var(--aqua); --hair:rgba(45,212,191,.22); --surface:var(--deep2);    --rule:var(--aqua);}
+.f-shallow{--field:var(--shallow); --ink:var(--foam); --muted:rgba(234,247,250,.66); --accent:var(--aqua); --hair:rgba(45,212,191,.22); --surface:var(--shallow2); --rule:var(--aqua);}
+.f-foam   {--field:var(--foam);    --ink:#062A38;     --muted:rgba(6,42,56,.72);     --accent:var(--teal); --hair:rgba(6,42,56,.16);    --surface:var(--foam2);    --rule:var(--aqua);}
+.f-aqua   {--field:var(--aqua);    --ink:var(--deep); --muted:rgba(4,32,46,.72);     --accent:var(--deep); --hair:rgba(4,32,46,.22);    --surface:#5EDFCF;         --rule:var(--deep);}
+.f-coral  {--field:var(--coral);   --ink:var(--deep); --muted:rgba(4,32,46,.72);     --accent:var(--deep); --hair:rgba(4,32,46,.22);    --surface:#FF9A82;         --rule:var(--deep);}
+
+html,body{margin:0;background:#000;}
+body{display:flex;align-items:flex-start;justify-content:flex-start;}
+#stage{position:relative;width:1920px;height:1080px;overflow:hidden;background:var(--foam);transform-origin:0 0;}
+.scene{position:absolute;inset:0;overflow:hidden;background:var(--field);color:var(--ink);visibility:hidden;}
+.scene .content{position:absolute;inset:0;transform-origin:50% 50%;}
+.edge{position:absolute;background:var(--rule);opacity:0;pointer-events:none;}
+.edge.h{left:0;width:100%;height:3px;top:0;}
+.edge.v{top:0;height:100%;width:3px;left:0;}
+
+/* ---------- type ---------- */
+.serif{font-family:Fraunces,serif;font-weight:340;line-height:.95;letter-spacing:-.02em;font-variation-settings:"opsz" 144;}
+.serif .em,.serif em{font-style:italic;color:var(--accent);}
+.mono{font-family:'JetBrains Mono',monospace;font-weight:500;text-transform:uppercase;letter-spacing:.26em;}
+.sans{font-family:Manrope,sans-serif;font-weight:500;line-height:1.5;}
+.hl{position:absolute;margin:0;}
+/* masked word reveal: words rise 115% from behind an edge */
+.w{display:inline-block;overflow:hidden;vertical-align:top;padding:.14em .08em .24em;margin:-.14em -.08em -.24em;}
+.wi{display:inline-block;transform:translateY(115%);opacity:0;will-change:transform,opacity;}
+.gr{opacity:0;will-change:transform,opacity;}
+br.pbr{display:none;} .portrait br.pbr{display:inline;}
+
+/* ---------- chrome (persistent slide furniture) ---------- */
+#chrome{position:absolute;inset:0;pointer-events:none;}
+#chrome .ch{position:absolute;color:var(--ink);}
+#chrome .rule{left:120px;top:72px;width:96px;height:3px;background:var(--rule);transform-origin:left center;transform:scaleX(0);}
+#chrome .hair{left:120px;width:1680px;height:1px;background:var(--hair);transform-origin:left center;transform:scaleX(0);}
+#chrome .hair.top{top:118px;} #chrome .hair.bot{top:958px;}
+#chrome .eyebrow{left:244px;top:56px;font-size:28px;height:40px;}
+#chrome .counter{right:120px;top:56px;font-size:28px;height:40px;text-align:right;}
+#chrome .handle{left:120px;top:992px;font-size:24px;letter-spacing:.08em;text-transform:none;color:var(--muted);height:36px;}
+#chrome .site{right:120px;top:992px;font-size:24px;letter-spacing:.08em;text-transform:none;color:var(--muted);height:36px;text-align:right;}
+.roll{position:relative;display:block;overflow:hidden;padding:.1em .2em .18em;margin:-.1em -.2em -.18em;white-space:nowrap;}
+.roll .sz{display:block;visibility:hidden;}
+.roll .ri{position:absolute;left:.2em;top:.1em;display:block;transform:translateY(115%);opacity:0;will-change:transform,opacity;}
+#chrome .counter .roll .ri,#chrome .site .roll .ri{left:auto;right:.2em;}
+
+/* ---------- grain ---------- */
+#grain{position:absolute;inset:0;mix-blend-mode:soft-light;opacity:.5;background-repeat:repeat;background-size:256px 256px;pointer-events:none;}
+
+/* ---------- scene 1: surface ---------- */
+#contours{position:absolute;left:-60px;top:-60px;width:2040px;height:1200px;}
+#contours path{fill:none;stroke:var(--ink);stroke-width:1.5;opacity:.11;}
+#h1{left:120px;top:372px;width:1690px;font-size:136px;}
+
+/* ---------- deep scene: what we do + the work ---------- */
+.vignette{position:absolute;inset:0;background:radial-gradient(ellipse 58% 68% at 34% 44%, var(--shallow) 0%, rgba(11,59,79,0) 100%);}
+canvas.caustics{position:absolute;left:0;top:0;width:100%;height:100%;filter:blur(1.2px);}
+#lines{position:absolute;left:120px;top:318px;width:1690px;}
+.line{position:relative;height:124px;margin-bottom:28px;}
+.line .num{position:absolute;left:0;top:14px;font-size:32px;color:var(--accent);letter-spacing:.22em;}
+.line .txt{position:absolute;left:118px;top:0;width:1560px;font-size:104px;margin:0;}
+
+/* the work: browser + phone frames drawn with hairlines, 20px radius */
+#work{position:absolute;inset:0;}
+.frame{position:absolute;}
+.frame svg.stroke{position:absolute;left:0;top:0;overflow:visible;}
+.frame svg.stroke rect{fill:none;stroke:var(--hair);stroke-width:1.5;}
+.frame .inner{position:absolute;inset:0;overflow:hidden;}
+#browser{left:120px;top:190px;width:1160px;height:700px;}
+#browser .inner{border-radius:20px;}
+#browser .bar{height:56px;border-bottom:1px solid var(--hair);display:flex;align-items:center;padding:0 22px;gap:9px;box-sizing:border-box;}
+#browser .dot{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--hair);box-sizing:border-box;}
+#browser .url{position:absolute;left:50%;top:14px;transform:translateX(-50%);height:28px;line-height:28px;padding:0 18px;border:1px solid var(--hair);border-radius:999px;font-size:13px;letter-spacing:.12em;color:var(--muted);text-transform:none;}
+#browser .slot{position:absolute;left:0;top:56px;right:0;bottom:0;overflow:hidden;}
+#phone{left:1500px;top:230px;width:300px;height:620px;}
+#phone .inner{border-radius:24px;}
+#phone .status{height:36px;display:flex;align-items:center;justify-content:center;}
+#phone .pill{width:64px;height:6px;border-radius:3px;background:var(--hair);}
+#phone .slot{position:absolute;left:0;top:36px;right:0;bottom:0;overflow:hidden;}
+.site{position:absolute;inset:0;background:var(--field);color:var(--ink);box-sizing:border-box;display:flex;flex-direction:column;transform:translateY(100%);}
+.site.d{padding:36px 56px 44px;}
+.site .nav{display:flex;justify-content:space-between;align-items:center;}
+.site .brand{font-family:Fraunces,serif;font-weight:400;letter-spacing:-.01em;font-variation-settings:"opsz" 60;}
+.site.d .brand{font-size:28px;}
+.site .links{display:flex;gap:34px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.22em;color:var(--muted);}
+.site .hero{flex:1;display:grid;grid-template-columns:1fr 420px;gap:60px;align-items:center;}
+.site .eyebrow{display:flex;align-items:center;gap:14px;font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.24em;color:var(--accent);}
+.site .eyebrow::before{content:'';display:block;width:40px;height:2px;background:var(--rule);}
+.site h2{font-family:Fraunces,serif;font-weight:340;line-height:.98;letter-spacing:-.02em;font-variation-settings:"opsz" 144;margin:0;}
+.site.d h2{font-size:60px;margin:22px 0 22px;}
+.site h2 em{font-style:italic;color:var(--accent);}
+.site p{font-family:Manrope,sans-serif;font-weight:500;line-height:1.5;color:var(--muted);margin:0;}
+.site.d p{font-size:17px;max-width:430px;margin-bottom:30px;}
+.btn{display:inline-block;font-family:Manrope,sans-serif;font-weight:600;border-radius:999px;}
+.site.d .btn{font-size:15px;padding:16px 28px;}
+.btn.coral{background:var(--coral);color:var(--deep);}
+.btn.deep{background:var(--deep);color:var(--foam);}
+.img{position:relative;overflow:hidden;border-radius:20px;background:var(--field);}
+.site.d .img{width:420px;height:380px;}
+.img svg{position:absolute;left:0;top:0;width:100%;height:100%;}
+.img svg path{fill:none;stroke:var(--hair);stroke-width:1.5;}
+/* mobile version */
+.site.m{padding:22px 22px 26px;}
+.site.m .brand{font-size:18px;}
+.site.m .burger{width:20px;height:12px;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink);box-sizing:border-box;}
+.site.m .hero{display:block;margin-top:40px;}
+.site.m .eyebrow{font-size:10px;letter-spacing:.2em;}
+.site.m .eyebrow::before{width:26px;}
+.site.m h2{font-size:31px;margin:16px 0 14px;}
+.site.m p{font-size:13px;margin-bottom:18px;}
+.site.m .btn{font-size:12px;padding:12px 20px;}
+.site.m .img{width:100%;height:186px;margin-top:24px;}
+.label{position:absolute;top:912px;font-size:20px;color:var(--muted);}
+#lblD{left:120px;} #lblM{left:1500px;}
+
+/* ---------- scene 4: every month ---------- */
+#h4{left:120px;top:322px;width:800px;font-size:100px;}
+#report{position:absolute;left:980px;top:252px;width:820px;height:560px;border-radius:20px;background:var(--surface);border:1px solid var(--hair);box-sizing:border-box;padding:34px 40px;}
+#report .head{display:flex;justify-content:space-between;font-size:14px;letter-spacing:.24em;color:var(--muted);padding-bottom:22px;border-bottom:1px solid var(--hair);}
+#report .head b{color:var(--ink);font-weight:500;}
+#report svg{display:block;margin-top:26px;width:738px;height:330px;overflow:visible;}
+#report .grid{stroke:var(--hair);stroke-width:1;}
+#report .l1{fill:none;stroke:var(--aqua);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;}
+#report .l2{fill:none;stroke:var(--sky);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+#report .xl{display:flex;justify-content:space-between;font-size:12px;letter-spacing:.22em;color:var(--muted);margin-top:14px;}
+#report .leg{display:flex;gap:34px;margin-top:22px;font-size:12px;letter-spacing:.22em;color:var(--muted);align-items:center;}
+#report .leg span{display:flex;align-items:center;gap:10px;}
+#report .leg i{display:block;width:10px;height:10px;border-radius:50%;}
+
+/* ---------- scene 5a: coral call ---------- */
+#h5{left:120px;top:356px;width:1690px;font-size:150px;}
+#loc{position:absolute;left:120px;top:760px;display:flex;align-items:center;gap:22px;font-size:26px;color:var(--ink);}
+#loc i{display:block;width:72px;height:3px;background:var(--rule);transform-origin:left center;}
+
+/* ---------- scene 5b: sign off ---------- */
+#signoff{position:absolute;left:0;top:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+#logo{height:120px;width:auto;margin-bottom:60px;display:none;}
+#sig{font-size:176px;line-height:.9;margin:0;}
+#tag{margin-top:52px;font-size:22px;color:var(--muted);}
+
+/* ---------- portrait (1080 x 1920 reel): same scenes, story safe zones ---------- */
+.portrait #stage{width:1080px;height:1920px;}
+.portrait #chrome .rule{left:90px;top:304px;width:80px;}
+.portrait #chrome .hair{left:90px;width:900px;}
+.portrait #chrome .hair.top{top:350px;} .portrait #chrome .hair.bot{top:1548px;}
+.portrait #chrome .eyebrow{left:198px;top:290px;font-size:22px;height:32px;}
+.portrait #chrome .counter{right:90px;top:290px;font-size:22px;height:32px;}
+.portrait #chrome .handle{left:90px;top:1578px;font-size:20px;height:30px;}
+.portrait #chrome .site{right:90px;top:1578px;font-size:20px;height:30px;}
+.portrait #contours{left:-60px;top:-60px;width:1200px;height:2040px;}
+.portrait #h1{left:90px;top:560px;width:900px;font-size:118px;}
+.portrait #lines{left:90px;top:560px;width:900px;}
+.portrait .line{height:auto;margin-bottom:44px;}
+.portrait .line .num{font-size:24px;top:10px;}
+.portrait .line .txt{position:relative;left:0;margin-left:72px;width:820px;font-size:84px;}
+.portrait #browser{left:90px;top:400px;width:900px;height:560px;}
+.portrait #browser .slot{width:1160px;height:644px;right:auto;bottom:auto;transform:scale(.7759);transform-origin:0 0;}
+.portrait #phone{left:690px;top:880px;}
+.portrait .label{font-size:18px;}
+.portrait #lblD{left:90px;top:980px;} .portrait #lblM{left:690px;top:1514px;}
+.portrait #h4{left:90px;top:400px;width:900px;font-size:100px;}
+.portrait #report{left:90px;top:740px;width:900px;height:600px;}
+.portrait #report svg{width:100%;height:auto;}
+.portrait #h5{left:90px;top:620px;width:900px;font-size:140px;}
+.portrait #loc{left:90px;top:960px;}
+.portrait #sig{font-size:150px;}
+.portrait #tag{font-size:20px;}
+</style>
+</head>
+<body>
+<div id="stage" class="f-foam">
+
+  <!-- 01 surface -->
+  <section class="scene f-foam" id="sc1" style="visibility:visible">
+    <svg id="contours" viewBox="0 0 2040 1200" preserveAspectRatio="none"></svg>
+    <div class="content">
+      <h1 id="h1" class="serif hl"></h1>
+    </div>
+  </section>
+
+  <!-- 02 what we do + 03 the work (same deep field) -->
+  <section class="scene f-deep" id="sc2">
+    <div class="vignette"></div>
+    <canvas class="caustics" id="ca1" width="960" height="540"></canvas>
+    <div class="content" id="c2">
+      <div id="lines"></div>
+    </div>
+    <div class="content" id="c3">
+      <div id="work">
+        <div class="frame" id="browser">
+          <svg class="stroke"><rect/></svg>
+          <div class="inner">
+            <div class="bar gr"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span class="url mono"><span class="roll" id="url"></span></span></div>
+            <div class="slot" id="slotD"></div>
+          </div>
+        </div>
+        <div class="frame" id="phone">
+          <svg class="stroke"><rect/></svg>
+          <div class="inner">
+            <div class="status"><i class="pill"></i></div>
+            <div class="slot" id="slotM"></div>
+          </div>
+        </div>
+        <div class="label mono gr" id="lblD">Desktop</div>
+        <div class="label mono gr" id="lblM">Mobile</div>
+      </div>
+    </div>
+    <div class="edge h"></div>
+  </section>
+
+  <!-- 04 every month -->
+  <section class="scene f-shallow" id="sc4">
+    <div class="content">
+      <h1 id="h4" class="serif hl"></h1>
+      <div id="report" class="gr">
+        <div class="head mono"><span><b>Performance report</b></span><span>October</span></div>
+        <svg viewBox="0 0 738 330" id="chart">
+          <line class="grid" x1="0" y1="0" x2="738" y2="0"/>
+          <line class="grid" x1="0" y1="82.5" x2="738" y2="82.5"/>
+          <line class="grid" x1="0" y1="165" x2="738" y2="165"/>
+          <line class="grid" x1="0" y1="247.5" x2="738" y2="247.5"/>
+          <line class="grid" x1="0" y1="330" x2="738" y2="330"/>
+          <path class="l2" id="l2"/>
+          <path class="l1" id="l1"/>
+        </svg>
+        <div class="xl mono"><span>Week 1</span><span>Week 2</span><span>Week 3</span><span>Week 4</span></div>
+        <div class="leg mono"><span><i style="background:var(--aqua)"></i>Visits</span><span><i style="background:var(--sky)"></i>WhatsApp taps</span></div>
+      </div>
+    </div>
+    <div class="edge h"></div>
+  </section>
+
+  <!-- 05 coral call -->
+  <section class="scene f-coral" id="sc5a">
+    <div class="content">
+      <h1 id="h5" class="serif hl"></h1>
+      <div id="loc" class="mono"><i></i><span class="roll" id="locroll"></span></div>
+    </div>
+    <div class="edge v"></div>
+  </section>
+
+  <!-- 05 sign off -->
+  <section class="scene f-deep" id="sc5b">
+    <div class="vignette"></div>
+    <canvas class="caustics" id="ca2" width="960" height="540"></canvas>
+    <div class="content">
+      <div id="signoff">
+        <img id="logo" src="assets/logo.png" alt="">
+        <h1 id="sig" class="serif"></h1>
+        <div id="tag" class="mono"></div>
+      </div>
+    </div>
+    <div class="edge h"></div>
+  </section>
+
+  <!-- chrome -->
+  <div id="chrome">
+    <div class="ch rule" data-k="rule"></div>
+    <div class="ch hair top" data-k="top"></div>
+    <div class="ch hair bot" data-k="bot"></div>
+    <div class="ch eyebrow mono" data-k="eyebrow"><span class="roll" id="eyebrow"></span></div>
+    <div class="ch counter mono" data-k="counter"><span class="roll" id="counter"></span></div>
+    <div class="ch handle mono" data-k="handle"><span class="roll" id="handle"></span></div>
+    <div class="ch site mono" data-k="site"><span class="roll" id="siteurl"></span></div>
+  </div>
+  <div id="grain"></div>
+</div>
+
+<script>
+/* ======================================================================
+   Sandiford Digital showreel. 15 s, 30 fps, 1920 x 1080.
+   Everything is a pure function of time: seek(t) sets the whole frame.
+   ====================================================================== */
+const params = new URLSearchParams(location.search);
+const MODE = (+params.get('w') || 1920) < (+params.get('h') || 1080) ? 'portrait' : 'landscape';
+if (MODE === 'portrait') document.documentElement.classList.add('portrait');
+const W = MODE === 'portrait' ? 1080 : 1920, H = MODE === 'portrait' ? 1920 : 1080, FPS = 30, DUR = 15;
+const CW = MODE === 'portrait' ? 1200 : 2040, CH = MODE === 'portrait' ? 2040 : 1200;
+const ANCHORS = {
+  landscape: { rule: [168, 72], top: [960, 118], bot: [960, 958], eyebrow: [420, 72], counter: [1720, 72], handle: [300, 1004], site: [1640, 1004] },
+  portrait: { rule: [130, 304], top: [540, 350], bot: [540, 1548], eyebrow: [330, 300], counter: [900, 300], handle: [200, 1590], site: [880, 1590] },
+};
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+
+/* cubic bezier easing (same curves as the brand motion spec) */
+function bezier(x1, y1, x2, y2) {
+  const A = (a1, a2) => 1 - 3 * a2 + 3 * a1, B = (a1, a2) => 3 * a2 - 6 * a1, C = a1 => 3 * a1;
+  const calc = (p, a1, a2) => ((A(a1, a2) * p + B(a1, a2)) * p + C(a1)) * p;
+  const slope = (p, a1, a2) => 3 * A(a1, a2) * p * p + 2 * B(a1, a2) * p + C(a1);
+  return x => {
+    if (x <= 0) return 0; if (x >= 1) return 1;
+    let g = x;
+    for (let i = 0; i < 8; i++) { const s = slope(g, x1, x2); if (Math.abs(s) < 1e-6) break; g -= (calc(g, x1, x2) - x) / s; }
+    g = clamp(g);
+    return calc(g, y1, y2);
+  };
+}
+const outQuint = bezier(.22, 1, .36, 1);     // text reveal
+const outExpo = bezier(.16, 1, .3, 1);       // group reveal
+const inOutQuint = bezier(.83, 0, .17, 1);   // wipes and rules
+const inQuint = bezier(.64, 0, .78, 0);      // exits
+const linear = p => clamp(p);
+const ramp = (t, s, d, e = outQuint) => e(clamp((t - s) / d));
+
+/* ---------- timeline (seconds) ---------- */
+const T = {
+  dive: 2.35, diveD: .6,            // deep water rises over the foam surface
+  s2: 2.95, s2exit: 5.12,           // what we do
+  s3: 5.50,                         // the work
+  swapB: 7.55, swapC: 8.50,
+  s3rise: 9.30, s3riseD: .5,        // shallow rises
+  s4: 9.80,                         // every month
+  s4wipe: 11.60, s4wipeD: .5,       // coral wipes in from the left
+  s5a: 11.95,
+  s5rise: 13.05, s5riseD: .5,       // deep rises for the sign off
+  s5b: 13.40,
+};
+
+/* ---------- DOM helpers ---------- */
+const $ = s => document.querySelector(s);
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+
+/* split "text with *accent*" into masked word spans; "|" forces a line break */
+function makeWords(container, text) {
+  container.innerHTML = '';
+  const spans = [];
+  const parts = text.split(/(\*[^*]+\*)/);
+  for (let part of parts) {
+    let em = false;
+    if (part.startsWith('*')) { em = true; part = part.slice(1, -1); }
+    for (const w of part.split(' ')) {
+      if (!w) continue;
+      if (w === '|') { container.appendChild(el('br')); continue; }
+      if (w === '¦') { container.appendChild(el('br', 'pbr')); continue; }
+      const o = el('span', 'w'); const i = el('span', 'wi' + (em ? ' em' : '')); i.textContent = w;
+      o.appendChild(i); container.appendChild(o); container.appendChild(document.createTextNode(' '));
+      spans.push(i);
+    }
+  }
+  return spans;
+}
+function reveal(spans, t, start, o = {}) {
+  const { dur = 1.0, stagger = .09, ease = outQuint, exitAt = Infinity, exitDur = .45, exitStagger = .03 } = o;
+  spans.forEach((s, i) => {
+    const p = ramp(t, start + i * stagger, dur, ease);
+    const q = ramp(t, exitAt + i * exitStagger, exitDur, inQuint);
+    s.style.transform = `translateY(${((1 - p) * 115 - q * 115).toFixed(2)}%)`;
+    s.style.opacity = (clamp(p * 1.7) * (1 - q)).toFixed(3);
+  });
+}
+/* group reveal: 40px rise plus fade */
+function rise(node, t, start, o = {}) {
+  const { dur = .9, dist = 40, ease = outExpo, exitAt = Infinity, exitDur = .45, exitDist = -40 } = o;
+  const p = ramp(t, start, dur, ease), q = ramp(t, exitAt, exitDur, inQuint);
+  node.style.transform = `translateY(${((1 - p) * dist + q * exitDist).toFixed(2)}px)`;
+  node.style.opacity = (p * (1 - q)).toFixed(3);
+}
+/* chrome roll: a list of {text, at}; each entry rises in, the previous rises out */
+function makeRoll(container, items) {
+  container.innerHTML = '';
+  container.appendChild(el('span', 'sz', items.reduce((a, b) => (b.text.length > a.length ? b.text : a), '')));
+  return items.map(it => { const s = el('span', 'ri', it.text); container.appendChild(s); return { node: s, at: it.at }; });
+}
+function roll(items, t) {
+  items.forEach((it, i) => {
+    const next = items[i + 1] ? items[i + 1].at : Infinity;
+    const p = ramp(t, it.at, .7), q = ramp(t, next - .42, .45, inQuint);
+    it.node.style.transform = `translateY(${((1 - p) * 115 - q * 115).toFixed(2)}%)`;
+    it.node.style.opacity = (clamp(p * 1.7) * (1 - q)).toFixed(3);
+  });
+}
+
+/* ---------- water ---------- */
+function contourD(w, h, i, n, t, amp = 1, step = 16) {
+  const base = (h / (n + 1)) * (i + 1);
+  let d = '';
+  for (let x = 0; x <= w + step; x += step) {
+    const y = base + amp * (22 * Math.sin(x * .0036 + i * .9 + t * .35) + 12 * Math.sin(x * .0091 - i * .6 - t * .5) + 6 * Math.sin(x * .021 + i * 1.7 + t * .2));
+    d += (x ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
+  }
+  return d;
+}
+function makeContours(svg, n) {
+  svg.innerHTML = '';
+  const paths = [];
+  for (let i = 0; i < n; i++) { const p = document.createElementNS('http://www.w3.org/2000/svg', 'path'); svg.appendChild(p); paths.push(p); }
+  return paths;
+}
+function drawContours(paths, w, h, t, amp = 1, step = 16) {
+  paths.forEach((p, i) => p.setAttribute('d', contourD(w, h, i, paths.length, t, amp, step)));
+}
+/* caustics: thin ridges of light, computed at quarter resolution */
+function drawCaustics(canvas, t, phase, strength) {
+  const ctx = canvas.getContext('2d'), w = canvas.width, h = canvas.height;
+  const img = ctx.createImageData(w, h), d = img.data;
+  const tt = t * .42 + phase, asp = h / w;
+  for (let y = 0; y < h; y++) {
+    const fy = (y / h) * asp * 2;
+    for (let x = 0; x < w; x++) {
+      const fx = (x / w) * 2;
+      const wx = fx + .09 * Math.sin(fy * 5.3 + tt * .8) + .045 * Math.sin(fy * 11.7 - tt * .5);
+      const wy = fy + .09 * Math.sin(fx * 4.7 - tt * .7) + .045 * Math.sin(fx * 9.3 + tt * .6);
+      const v = (Math.sin(wx * 13.7 + tt) + Math.sin(wy * 12.1 - tt * .8) + Math.sin((wx + wy) * 9.3 + tt * .5)) / 3;
+      let a = 1 - Math.abs(v) * 16; a = a > 0 ? a * a : 0;
+      const o = (y * w + x) * 4;
+      d[o] = 45; d[o + 1] = 212; d[o + 2] = 191; d[o + 3] = Math.min(255, a * 255 * strength);
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+}
+
+/* ---------- grain ---------- */
+let rngSeed = 7;
+function rnd() { rngSeed = (rngSeed * 1664525 + 1013904223) >>> 0; return rngSeed / 4294967296; }
+function makeGrain() {
+  const c = document.createElement('canvas'); c.width = c.height = 256;
+  const ctx = c.getContext('2d'), img = ctx.createImageData(256, 256), d = img.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const v = 128 + (rnd() + rnd() + rnd() - 1.5) * 70;
+    d[i] = d[i + 1] = d[i + 2] = clamp(v, 0, 255); d[i + 3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+  $('#grain').style.backgroundImage = `url(${c.toDataURL()})`;
+}
+
+/* ---------- scenes ---------- */
+const sc = { s1: $('#sc1'), s2: $('#sc2'), s4: $('#sc4'), s5a: $('#sc5a'), s5b: $('#sc5b') };
+const SCENES = [
+  { node: sc.s1, field: 'f-foam' },
+  { node: sc.s2, field: 'f-deep', type: 'rise', start: T.dive, dur: T.diveD },
+  { node: sc.s4, field: 'f-shallow', type: 'rise', start: T.s3rise, dur: T.s3riseD },
+  { node: sc.s5a, field: 'f-coral', type: 'left', start: T.s4wipe, dur: T.s4wipeD },
+  { node: sc.s5b, field: 'f-deep', type: 'rise', start: T.s5rise, dur: T.s5riseD },
+];
+const progress = (s, t) => s.type ? ramp(t, s.start, s.dur, inOutQuint) : 1;
+function covers(s, t, x, y) {
+  const p = progress(s, t);
+  if (p <= 0) return false; if (p >= 1) return true;
+  return s.type === 'rise' ? y >= H * (1 - p) : x <= W * p;
+}
+function fieldAt(t, x, y) { let f = 'f-foam'; for (const s of SCENES) if (covers(s, t, x, y)) f = s.field; return f; }
+function layoutScenes(t) {
+  for (const s of SCENES) {
+    if (!s.type) continue;
+    const p = progress(s, t), n = s.node;
+    n.style.visibility = p > 0 ? 'visible' : 'hidden';
+    n.style.clipPath = p >= 1 ? 'none' : (s.type === 'rise' ? `inset(${((1 - p) * 100).toFixed(3)}% 0 0 0)` : `inset(0 ${((1 - p) * 100).toFixed(3)}% 0 0)`);
+    const edge = n.querySelector('.edge');
+    if (s.type === 'rise') edge.style.top = ((1 - p) * 100).toFixed(3) + '%'; else edge.style.left = (p * 100).toFixed(3) + '%';
+    edge.style.opacity = p <= 0 ? 0 : (p < 1 ? 1 : 1 - ramp(t, s.start + s.dur, .35, linear));
+  }
+}
+
+/* --- 01 surface --- */
+const contourPaths = makeContours($('#contours'), 15);
+const h1Words = makeWords($('#h1'), 'Your customers are Googling you. | *Nothing comes up.*');
+function scene1(t) {
+  if (t > T.dive + T.diveD + .2) return;
+  const svg = $('#contours');
+  svg.style.opacity = ramp(t, 0, 1.2, linear) * .9;
+  svg.style.transform = `translate(${(-t * 6).toFixed(1)}px, ${(-t * 3).toFixed(1)}px)`;
+  drawContours(contourPaths, CW, CH, t);
+  reveal(h1Words, t, .38);
+  // parallax drift while the water rises
+  const d = ramp(t, T.dive, T.diveD, inOutQuint);
+  $('#sc1 .content').style.transform = `translateY(${(-d * 60).toFixed(1)}px) scale(${(1 + t * .0015).toFixed(4)})`;
+}
+
+/* --- 02 what we do --- */
+const LINES = ['We build the site.', 'We write the words.', 'We send the numbers ¦ *every month.*'];
+const lineWords = LINES.map((txt, i) => {
+  const row = el('div', 'line');
+  row.appendChild(el('div', 'num mono', '0' + (i + 1)));
+  const h = el('h2', 'serif txt'); row.appendChild(h); $('#lines').appendChild(row);
+  const numSpans = makeWords(row.querySelector('.num'), '0' + (i + 1));
+  return { words: makeWords(h, txt), num: numSpans };
+});
+function scene2(t) {
+  const c2 = $('#c2');
+  if (t < T.dive || t > T.s3 + .1) { c2.style.visibility = 'hidden'; return; }
+  c2.style.visibility = 'visible';
+  lineWords.forEach((l, i) => {
+    reveal(l.num, t, T.s2 + i * .42 - .08, { dur: .8, exitAt: T.s2exit + i * .06 });
+    reveal(l.words, t, T.s2 + i * .42, { exitAt: T.s2exit + i * .06 });
+  });
+  c2.style.transform = `scale(${(1 + ramp(t, T.s2, 3, linear) * .02).toFixed(4)})`;
+}
+
+/* --- 03 the work --- */
+const SITES = [
+  { field: 'f-foam', brand: 'Bakery.', links: ['Bread', 'Cakes', 'Order'], url: 'yourbakery.bb', eyebrow: 'Bakery · Bridgetown', h1: 'Fresh bread,<br><em>six days a week.</em>', body: 'Order by 6pm. Collect from 7am. Cash or card at the counter.', cta: 'Order on WhatsApp', btn: 'coral', img: 'f-shallow' },
+  { field: 'f-deep', brand: 'Salon.', links: ['Hair', 'Nails', 'Book'], url: 'yoursalon.bb', eyebrow: 'Salon · Holetown', h1: 'Book your chair<br><em>in two taps.</em>', body: 'Open Tuesday to Saturday. Walk ins welcome when a chair is free.', cta: 'Book on WhatsApp', btn: 'coral', img: 'f-shallow' },
+  { field: 'f-aqua', brand: 'Rentals.', links: ['Cars', 'Rates', 'Quote'], url: 'yourrentals.bb', eyebrow: 'Car rental · Airport pickup', h1: 'Keys waiting<br><em>at arrivals.</em>', body: 'Pick up at the airport. Drop off anywhere on the island.', cta: 'Get a quote', btn: 'deep', img: 'f-foam' },
+];
+const imgContours = [];
+function buildSite(s, mobile) {
+  const site = el('div', `site ${mobile ? 'm' : 'd'} ${s.field}`);
+  const nav = el('div', 'nav gr');
+  nav.appendChild(el('div', 'brand', s.brand));
+  if (mobile) nav.appendChild(el('div', 'burger'));
+  else { const links = el('div', 'links mono'); s.links.forEach(l => links.appendChild(el('span', '', l.toUpperCase()))); nav.appendChild(links); }
+  site.appendChild(nav);
+  const hero = el('div', 'hero');
+  const txt = el('div', 'txt');
+  txt.appendChild(el('div', 'eyebrow gr', s.eyebrow.toUpperCase()));
+  txt.appendChild(el('h2', 'gr', s.h1));
+  txt.appendChild(el('p', 'gr', s.body));
+  txt.appendChild(el('span', `btn gr ${s.btn}`, s.cta));
+  hero.appendChild(txt);
+  const img = el('div', `img gr ${s.img}`);
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', mobile ? '0 0 256 186' : '0 0 420 380'); svg.setAttribute('preserveAspectRatio', 'none');
+  img.appendChild(svg); hero.appendChild(img);
+  imgContours.push({ paths: makeContours(svg, mobile ? 6 : 9), w: mobile ? 256 : 420, h: mobile ? 186 : 380, seed: imgContours.length });
+  site.appendChild(hero);
+  return site;
+}
+const sitesD = SITES.map(s => buildSite(s, false)), sitesM = SITES.map(s => buildSite(s, true));
+sitesD.forEach(s => $('#slotD').appendChild(s)); sitesM.forEach(s => $('#slotM').appendChild(s));
+function initFrame(id) {
+  const f = $(id), r = f.getBoundingClientRect(), svg = f.querySelector('svg.stroke'), rect = svg.querySelector('rect');
+  const w = f.offsetWidth, h = f.offsetHeight, rx = id === '#phone' ? 24 : 20;
+  svg.setAttribute('width', w); svg.setAttribute('height', h);
+  rect.setAttribute('x', .75); rect.setAttribute('y', .75); rect.setAttribute('width', w - 1.5); rect.setAttribute('height', h - 1.5); rect.setAttribute('rx', rx);
+  const L = rect.getTotalLength(); rect.style.strokeDasharray = L; rect.style.strokeDashoffset = L;
+  return { rect, L, inner: f.querySelector('.inner') };
+}
+let browserF, phoneF;
+const urlRoll = makeRoll($('#url'), SITES.map((s, i) => ({ text: s.url, at: i === 0 ? T.s3 + .45 : i === 1 ? T.swapB + .15 : T.swapC + .15 })));
+function scene3(t) {
+  const c3 = $('#c3');
+  if (t < T.s3 - .1 || t > T.s3rise + T.s3riseD + .2) { c3.style.visibility = 'hidden'; return; }
+  c3.style.visibility = 'visible';
+  // frames draw themselves with a hairline
+  const pb = ramp(t, T.s3, .8, inOutQuint), pp = ramp(t, T.s3 + 1.15, .7, inOutQuint);
+  browserF.rect.style.strokeDashoffset = (browserF.L * (1 - pb)).toFixed(1);
+  phoneF.rect.style.strokeDashoffset = (phoneF.L * (1 - pp)).toFixed(1);
+  // browser bar + first site assemble element by element
+  rise($('#browser .bar'), t, T.s3 + .55);
+  roll(urlRoll, t);
+  const groupsD = sitesD[0].querySelectorAll('.gr'), groupsM = sitesM[0].querySelectorAll('.gr');
+  rise(sitesD[0], t, T.s3 + .45, { dur: .9, dist: 30 }); rise(sitesM[0], t, T.s3 + 1.35, { dur: .9, dist: 24 });
+  groupsD.forEach((g, i) => rise(g, t, T.s3 + .7 + i * .1));
+  groupsM.forEach((g, i) => rise(g, t, T.s3 + 1.5 + i * .1));
+  // phone frame rises in as a group
+  rise($('#phone'), t, T.s3 + 1.15, { dist: 40 });
+  rise($('#lblD'), t, T.s3 + 1.05); rise($('#lblM'), t, T.s3 + 1.6);
+  // later sites rise from behind the frame's bottom edge
+  [1, 2].forEach(i => {
+    const at = i === 1 ? T.swapB : T.swapC;
+    const pd = ramp(t, at, .6, inOutQuint), pm = ramp(t, at + .08, .6, inOutQuint);
+    sitesD[i].style.transform = `translateY(${((1 - pd) * 100).toFixed(2)}%)`;
+    sitesM[i].style.transform = `translateY(${((1 - pm) * 100).toFixed(2)}%)`;
+    sitesD[i].querySelectorAll('.gr').forEach(g => { g.style.opacity = 1; g.style.transform = 'none'; });
+    sitesM[i].querySelectorAll('.gr').forEach(g => { g.style.opacity = 1; g.style.transform = 'none'; });
+  });
+  imgContours.forEach(c => drawContours(c.paths, c.w, c.h, t * .6 + c.seed, .45, 12));
+  // slow push in
+  c3.style.transform = `scale(${(1 + ramp(t, T.s3, 4.2, linear) * .025).toFixed(4)})`;
+}
+
+/* --- 04 every month --- */
+const h4Words = makeWords($('#h4'), 'Every month, | the numbers | *in plain English.*');
+const V1 = [30, 36, 33, 41, 44, 40, 48, 53, 50, 58, 62, 59, 68], V2 = [12, 15, 13, 18, 17, 21, 23, 22, 27, 30, 29, 34, 37];
+function linePath(v) { return v.map((y, i) => (i ? 'L' : 'M') + (i * 738 / (v.length - 1)).toFixed(1) + ' ' + (330 - y * 3.3).toFixed(1)).join(''); }
+$('#l1').setAttribute('d', linePath(V1)); $('#l2').setAttribute('d', linePath(V2));
+const L1 = $('#l1').getTotalLength(), L2 = $('#l2').getTotalLength();
+$('#l1').style.strokeDasharray = L1; $('#l2').style.strokeDasharray = L2;
+function scene4(t) {
+  const c = $('#sc4 .content');
+  if (t < T.s3rise || t > T.s4wipe + T.s4wipeD + .2) return;
+  reveal(h4Words, t, T.s4 + .05);
+  rise($('#report'), t, T.s4 + .25, { dur: 1 });
+  $('#l1').style.strokeDashoffset = (L1 * (1 - ramp(t, T.s4 + .7, 1.3, inOutQuint))).toFixed(1);
+  $('#l2').style.strokeDashoffset = (L2 * (1 - ramp(t, T.s4 + .95, 1.3, inOutQuint))).toFixed(1);
+  c.style.transform = `scale(${(1 + ramp(t, T.s4, 2.3, linear) * .02).toFixed(4)})`;
+}
+
+/* --- 05 coral call --- */
+const h5Words = makeWords($('#h5'), 'Message us | *on WhatsApp.*');
+const locRoll = makeRoll($('#locroll'), [{ text: 'Bridgetown, Barbados', at: T.s5a + .55 }]);
+function scene5a(t) {
+  if (t < T.s4wipe || t > T.s5rise + T.s5riseD + .2) return;
+  reveal(h5Words, t, T.s5a);
+  roll(locRoll, t);
+  $('#loc i').style.transform = `scaleX(${ramp(t, T.s5a + .4, .5, inOutQuint).toFixed(3)})`;
+  $('#sc5a .content').style.transform = `scale(${(1 + ramp(t, T.s5a, 1.6, linear) * .015).toFixed(4)})`;
+}
+
+/* --- 05 sign off --- */
+const sigWords = makeWords($('#sig'), 'Sandiford | *Digital.*');
+const tagWords = makeWords($('#tag'), 'Websites · Content · Monthly reports');
+function scene5b(t) {
+  if (t < T.s5rise) return;
+  reveal(sigWords, t, T.s5b, { dur: 1.1, stagger: .14 });
+  reveal(tagWords, t, T.s5b + .7, { dur: .8, stagger: .05 });
+  const logo = $('#logo'); if (logo.dataset.ok) rise(logo, t, T.s5b - .1, { dur: 1 });
+  $('#sc5b .content').style.transform = `scale(${(1 + ramp(t, T.s5b, 1.8, linear) * .015).toFixed(4)})`;
+}
+
+/* --- chrome --- */
+const eyebrowRoll = makeRoll($('#eyebrow'), [
+  { text: 'Sandiford Digital', at: .22 }, { text: 'What we do', at: T.s2 - .02 }, { text: 'The work', at: T.s3 },
+  { text: 'Every month', at: T.s4 - .05 }, { text: 'Say hello', at: T.s5a - .1 }, { text: 'Bridgetown, Barbados', at: T.s5b },
+]);
+const counterRoll = makeRoll($('#counter'), [
+  { text: '01 / 05', at: .22 }, { text: '02 / 05', at: T.s2 - .02 }, { text: '03 / 05', at: T.s3 }, { text: '04 / 05', at: T.s4 - .05 }, { text: '05 / 05', at: T.s5a - .1 },
+]);
+const handleRoll = makeRoll($('#handle'), [{ text: '@sandiford.digital', at: .34 }]);
+const siteRoll = makeRoll($('#siteurl'), [{ text: 'sandiford-digital.com', at: .34 }]);
+const chromeNodes = [...document.querySelectorAll('#chrome .ch')];
+function chrome(t) {
+  for (const n of chromeNodes) {
+    const f = fieldAt(t, +n.dataset.x, +n.dataset.y);
+    if (n.dataset.f !== f) { n.classList.remove('f-deep', 'f-shallow', 'f-foam', 'f-aqua', 'f-coral'); n.classList.add(f); n.dataset.f = f; }
+  }
+  $('#chrome .rule').style.transform = `scaleX(${ramp(t, .08, .55, inOutQuint).toFixed(3)})`;
+  $('#chrome .hair.top').style.transform = `scaleX(${ramp(t, .14, .9, inOutQuint).toFixed(3)})`;
+  $('#chrome .hair.bot').style.transform = `scaleX(${ramp(t, .2, .9, inOutQuint).toFixed(3)})`;
+  roll(eyebrowRoll, t); roll(counterRoll, t); roll(handleRoll, t); roll(siteRoll, t);
+}
+
+/* --- master --- */
+function seek(t, frame) {
+  t = clamp(t, 0, DUR);
+  if (frame == null) frame = Math.round(t * FPS);
+  layoutScenes(t);
+  scene1(t);
+  if (t >= T.dive && t <= T.s3rise + 1) { drawCaustics($('#ca1'), t, 0, .16); }
+  scene2(t); scene3(t); scene4(t); scene5a(t);
+  if (t >= T.s5rise) drawCaustics($('#ca2'), t, 3.1, .15);
+  scene5b(t);
+  chrome(t);
+  rngSeed = 1000 + frame * 7919;
+  $('#grain').style.backgroundPosition = `${Math.floor(rnd() * 256)}px ${Math.floor(rnd() * 256)}px`;
+}
+
+/* ---------- boot ---------- */
+window.__ready = (async () => {
+  await document.fonts.ready;
+  await Promise.all(['Fraunces', 'Manrope', 'JetBrains Mono'].map(f => document.fonts.load(`400 20px "${f}"`)));
+  await new Promise(res => {
+    const l = $('#logo'), ok = () => { l.dataset.ok = 1; l.style.display = 'block'; res(); };
+    if (l.complete) { if (l.naturalWidth) ok(); else res(); return; }
+    l.onload = ok; l.onerror = () => res();
+  });
+  makeGrain();
+  for (const n of chromeNodes) { const a = ANCHORS[MODE][n.dataset.k]; n.dataset.x = a[0]; n.dataset.y = a[1]; }
+  $('#contours').setAttribute('viewBox', `0 0 ${CW} ${CH}`);
+  for (const c of document.querySelectorAll('canvas.caustics')) { c.width = MODE === 'portrait' ? 540 : 960; c.height = MODE === 'portrait' ? 960 : 540; }
+  browserF = initFrame('#browser'); phoneF = initFrame('#phone');
+  seek(0, 0);
+  return true;
+})();
+window.__seek = (t, frame) => { seek(t, frame); return true; };
+
+/* live preview when opened in a browser: ?t=4.2 freezes a frame, otherwise it loops */
+if (!params.has('render')) {
+  const fit = () => { const s = Math.min(innerWidth / W, innerHeight / H); $('#stage').style.transform = `scale(${s})`; document.body.style.height = (H * s) + 'px'; };
+  addEventListener('resize', fit); fit();
+  window.__ready.then(() => {
+    if (params.has('t')) { seek(+params.get('t')); return; }
+    const t0 = performance.now();
+    const loop = () => { seek(((performance.now() - t0) / 1000) % DUR); requestAnimationFrame(loop); };
+    requestAnimationFrame(loop);
+  });
+}
+</script>
+</body>
+</html>
